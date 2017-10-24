@@ -8,6 +8,10 @@ using namespace Graphics2Project;
 using namespace DirectX;
 using namespace Windows::Foundation;
 
+
+
+
+
 // Loads vertex and pixel shaders from files and instantiates the cube geometry.
 Sample3DSceneRenderer::Sample3DSceneRenderer(const std::shared_ptr<DX::DeviceResources>& deviceResources) :
 	m_loadingComplete(false),
@@ -76,6 +80,7 @@ void Sample3DSceneRenderer::Update(DX::StepTimer const& timer)
 		float radians = static_cast<float>(fmod(totalRotation, XM_2PI));
 
 		Rotate(radians);
+		
 	}
 }
 

@@ -95,6 +95,7 @@ void Graphics2ProjectMain::OnDeviceLost()
 void Graphics2ProjectMain::OnDeviceRestored()
 {
 	m_sceneRenderer->CreateDeviceDependentResources();
+	
 	m_fpsTextRenderer->CreateDeviceDependentResources();
 	CreateWindowSizeDependentResources();
 }

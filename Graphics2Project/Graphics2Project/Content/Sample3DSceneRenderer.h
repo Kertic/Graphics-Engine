@@ -31,16 +31,26 @@ namespace Graphics2Project
 		std::shared_ptr<DX::DeviceResources> m_deviceResources;
 
 		// Direct3D resources for cube geometry.
-		Microsoft::WRL::ComPtr<ID3D11InputLayout>	m_inputLayout;
-		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_vertexBuffer;
-		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_indexBuffer;
-		Microsoft::WRL::ComPtr<ID3D11VertexShader>	m_vertexShader;
-		Microsoft::WRL::ComPtr<ID3D11PixelShader>	m_pixelShader;
-		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_constantBuffer;
+		Microsoft::WRL::ComPtr<ID3D11InputLayout>	m_CubeInputLayout;
+		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_CubeVertexBuffer;
+		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_CubeIndexBuffer;
+		Microsoft::WRL::ComPtr<ID3D11VertexShader>	m_CubeVertexShader;
+		Microsoft::WRL::ComPtr<ID3D11PixelShader>	m_CubePixelShader;
+		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_CubeConstantBuffer;
+
+		Microsoft::WRL::ComPtr<ID3D11InputLayout>	m_PyramidinputLayout;
+		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_PyramidvertexBuffer;
+		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_PyramidindexBuffer;
+		Microsoft::WRL::ComPtr<ID3D11VertexShader>	m_PyramidvertexShader;
+		Microsoft::WRL::ComPtr<ID3D11PixelShader>	m_PyramidpixelShader;
+		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_PyramidconstantBuffer;
 
 		// System resources for cube geometry.
 		ModelViewProjectionConstantBuffer	m_constantBufferData;
 		uint32	m_indexCount;
+
+		ModelViewProjectionConstantBuffer	m_PyramidconstantBufferData;
+		uint32	m_PyramidindexCount;
 
 		// Variables used with the rendering loop.
 		bool	m_loadingComplete;

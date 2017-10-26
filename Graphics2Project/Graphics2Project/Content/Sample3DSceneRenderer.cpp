@@ -123,10 +123,13 @@ void Sample3DSceneRenderer::Render()
 	}
 
 	auto context = m_deviceResources->GetD3DDeviceContext();
+#pragma region Draw Cube
+
+
 
 	// Prepare the constant buffer to send it to the graphics device.
 	context->UpdateSubresource1(
-		m_constantBuffer.Get(),
+		m_CubeConstantBuffer.Get(),
 		0,
 		NULL,
 		&m_constantBufferData,
@@ -141,24 +144,24 @@ void Sample3DSceneRenderer::Render()
 	context->IASetVertexBuffers(
 		0,
 		1,
-		m_vertexBuffer.GetAddressOf(),
+		m_CubeVertexBuffer.GetAddressOf(),
 		&stride,
 		&offset
 	);
 
 	context->IASetIndexBuffer(
-		m_indexBuffer.Get(),
+		m_CubeIndexBuffer.Get(),
 		DXGI_FORMAT_R16_UINT, // Each index is one 16-bit unsigned integer (short).
 		0
 	);
 
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	context->IASetInputLayout(m_inputLayout.Get());
+	context->IASetInputLayout(m_CubeInputLayout.Get());
 
 	// Attach our vertex shader.
 	context->VSSetShader(
-		m_vertexShader.Get(),
+		m_CubeVertexShader.Get(),
 		nullptr,
 		0
 	);
@@ -167,14 +170,14 @@ void Sample3DSceneRenderer::Render()
 	context->VSSetConstantBuffers1(
 		0,
 		1,
-		m_constantBuffer.GetAddressOf(),
+		m_CubeConstantBuffer.GetAddressOf(),
 		nullptr,
 		nullptr
 	);
 
 	// Attach our pixel shader.
 	context->PSSetShader(
-		m_pixelShader.Get(),
+		m_CubePixelShader.Get(),
 		nullptr,
 		0
 	);
@@ -185,6 +188,76 @@ void Sample3DSceneRenderer::Render()
 		0,
 		0
 	);
+
+#pragma endregion
+
+#pragma region Draw Pyramid
+
+	//Adjust constantBufferData to change pyramid position
+
+	// Prepare the constant buffer to send it to the graphics device.
+	context->UpdateSubresource1(
+		m_CubeConstantBuffer.Get(),
+		0,
+		NULL,
+		&m_constantBufferData,
+		0,
+		0,
+		0
+	);
+
+	// Each vertex is one instance of the VertexPositionColor struct.
+	stride = sizeof(VertexPositionColor);
+	offset = 0;
+	context->IASetVertexBuffers(
+		0,
+		1,
+		m_PyramidvertexBuffer.GetAddressOf(),
+		&stride,
+		&offset
+	);
+
+	context->IASetIndexBuffer(
+		m_PyramidindexBuffer.Get(),
+		DXGI_FORMAT_R16_UINT, // Each index is one 16-bit unsigned integer (short).
+		0
+	);
+
+	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	context->IASetInputLayout(m_CubeInputLayout.Get());
+
+	// Attach our vertex shader.
+	context->VSSetShader(
+		m_CubeVertexShader.Get(),
+		nullptr,
+		0
+	);
+
+	// Send the constant buffer to the graphics device.
+	context->VSSetConstantBuffers1(
+		0,
+		1,
+		m_CubeConstantBuffer.GetAddressOf(),
+		nullptr,
+		nullptr
+	);
+
+	// Attach our pixel shader.
+	context->PSSetShader(
+		m_CubePixelShader.Get(),
+		nullptr,
+		0
+	);
+
+	// Draw the objects.
+	context->DrawIndexed(
+		m_PyramidindexCount,
+		0,
+		0
+	);
+
+#pragma endregion
 }
 
 void Sample3DSceneRenderer::CreateDeviceDependentResources()
@@ -195,20 +268,26 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 
 	// After the vertex shader file is loaded, create the shader and input layout.
 	auto createVSTask = loadVSTask.then([this](const std::vector<byte>& fileData) {
-		DX::ThrowIfFailed(
-			m_deviceResources->GetD3DDevice()->CreateVertexShader(
-				&fileData[0],
-				fileData.size(),
-				nullptr,
-				&m_vertexShader
-			)
-		);
 
 		static const D3D11_INPUT_ELEMENT_DESC vertexDesc[] =
 		{
 			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 			{ "COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		};
+#pragma region Cube
+
+
+
+		DX::ThrowIfFailed(
+			m_deviceResources->GetD3DDevice()->CreateVertexShader(
+				&fileData[0],
+				fileData.size(),
+				nullptr,
+				&m_CubeVertexShader
+			)
+		);
+
+
 
 		DX::ThrowIfFailed(
 			m_deviceResources->GetD3DDevice()->CreateInputLayout(
@@ -216,30 +295,83 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 				ARRAYSIZE(vertexDesc),
 				&fileData[0],
 				fileData.size(),
-				&m_inputLayout
+				&m_CubeInputLayout
 			)
 		);
+#pragma endregion
+
+#pragma region Pyramid
+
+
+
+
+		DX::ThrowIfFailed(
+			m_deviceResources->GetD3DDevice()->CreateVertexShader(
+				&fileData[0],
+				fileData.size(),
+				nullptr,
+				&m_PyramidvertexShader
+			)
+		);
+
+		DX::ThrowIfFailed(
+			m_deviceResources->GetD3DDevice()->CreateInputLayout(
+				vertexDesc,
+				ARRAYSIZE(vertexDesc),
+				&fileData[0],
+				fileData.size(),
+				&m_PyramidinputLayout
+			)
+		);
+
+#pragma endregion
 	});
 
 	// After the pixel shader file is loaded, create the shader and constant buffer.
 	auto createPSTask = loadPSTask.then([this](const std::vector<byte>& fileData) {
+		CD3D11_BUFFER_DESC constantBufferDesc(sizeof(ModelViewProjectionConstantBuffer), D3D11_BIND_CONSTANT_BUFFER);
+#pragma region Cube
 		DX::ThrowIfFailed(
 			m_deviceResources->GetD3DDevice()->CreatePixelShader(
 				&fileData[0],
 				fileData.size(),
 				nullptr,
-				&m_pixelShader
+				&m_CubePixelShader
 			)
 		);
 
-		CD3D11_BUFFER_DESC constantBufferDesc(sizeof(ModelViewProjectionConstantBuffer), D3D11_BIND_CONSTANT_BUFFER);
+
 		DX::ThrowIfFailed(
 			m_deviceResources->GetD3DDevice()->CreateBuffer(
 				&constantBufferDesc,
 				nullptr,
-				&m_constantBuffer
+				&m_CubeConstantBuffer
 			)
 		);
+#pragma endregion
+
+#pragma region Pyramid
+		DX::ThrowIfFailed(
+			m_deviceResources->GetD3DDevice()->CreatePixelShader(
+				&fileData[0],
+				fileData.size(),
+				nullptr,
+				&m_PyramidpixelShader
+			)
+		);
+
+
+		DX::ThrowIfFailed(
+			m_deviceResources->GetD3DDevice()->CreateBuffer(
+				&constantBufferDesc,
+				nullptr,
+				&m_PyramidconstantBuffer
+			)
+		);
+#pragma endregion
+
+
+
 	});
 
 	// Once both shaders are loaded, create the mesh.
@@ -269,7 +401,7 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 			m_deviceResources->GetD3DDevice()->CreateBuffer(
 				&vertexBufferDesc,
 				&vertexBufferData,
-				&m_vertexBuffer
+				&m_CubeVertexBuffer
 			)
 		);
 
@@ -312,11 +444,81 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 			m_deviceResources->GetD3DDevice()->CreateBuffer(
 				&indexBufferDesc,
 				&indexBufferData,
-				&m_indexBuffer
+				&m_CubeIndexBuffer
 			)
 		);
 
-		CreatePyramid();
+#pragma region Create Pyramid
+
+
+
+
+
+
+
+		static const VertexPositionColor pyramidVerts[] =
+		{
+			{ XMFLOAT3(-0.5f, 0.5f, -0.5f), XMFLOAT3(1.0f, 1.0f, 0.5f) },
+			{ XMFLOAT3(0.5f, 0.5f, -0.5f), XMFLOAT3(1.0f, 1.0f, 0.5f) },
+			{ XMFLOAT3(0.5f, 0.5f, 0.5f), XMFLOAT3(1.0f, 1.0f, 0.5f) },
+			{ XMFLOAT3(-0.5f, 0.5f, 0.5f), XMFLOAT3(1.0f, 1.0f, 0.5f) },
+			{ XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT3(1.0f, 0.0f, 0.0f) },
+
+
+		};
+
+		vertexBufferData = { 0 };
+		vertexBufferData.pSysMem = pyramidVerts;
+		vertexBufferData.SysMemPitch = 0;
+		vertexBufferData.SysMemSlicePitch = 0;
+		vertexBufferDesc = CD3D11_BUFFER_DESC(sizeof(pyramidVerts), D3D11_BIND_VERTEX_BUFFER);
+		DX::ThrowIfFailed(
+			m_deviceResources->GetD3DDevice()->CreateBuffer(
+				&vertexBufferDesc,
+				&vertexBufferData,
+				&m_PyramidvertexBuffer
+			)
+		);
+
+		static const unsigned short pyramidIndices[] =
+		{
+			//Bottom face
+			0,1,2,
+			2,3,0,
+
+			//+z
+			3,4,2,
+
+			//-z
+			1,4,0,
+
+			//+x
+			2,4,1,
+
+			//-x
+			0,4,3,
+
+		};
+
+
+
+
+		m_PyramidindexCount = ARRAYSIZE(pyramidIndices);
+
+		indexBufferData = { 0 };
+		indexBufferData.pSysMem = pyramidIndices;
+		indexBufferData.SysMemPitch = 0;
+		indexBufferData.SysMemSlicePitch = 0;
+		indexBufferDesc = CD3D11_BUFFER_DESC(sizeof(pyramidIndices), D3D11_BIND_INDEX_BUFFER);
+		DX::ThrowIfFailed(
+			m_deviceResources->GetD3DDevice()->CreateBuffer(
+				&indexBufferDesc,
+				&indexBufferData,
+				&m_PyramidindexBuffer
+			)
+		);
+#pragma endregion
+
 	});
 
 	// Once the cube is loaded, the object is ready to be rendered.
@@ -329,13 +531,20 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 }
 void Sample3DSceneRenderer::CreatePyramid() {
 
+
+
+
+
+
+
+
 	static const VertexPositionColor pyramidVerts[] =
 	{
-		{ XMFLOAT3(-0.5f, 0.0f, -0.5f), XMFLOAT3(0.0f, 1.0f, 0.0f) },
-		{ XMFLOAT3(0.5f, 0.0f, -0.5f), XMFLOAT3(0.0f, 1.0f, 0.0f) },
-		{ XMFLOAT3(0.5f, 0.0f, 0.5f), XMFLOAT3(0.0f, 1.0f, 0.0f) },
-		{ XMFLOAT3(-0.5f, 0.0f, 0.5f), XMFLOAT3(0.0f, 1.0f, 0.0f) },
-		{ XMFLOAT3(0.0f, 0.5f, 0.0f), XMFLOAT3(1.0f, 0.0f, 0.0f) },
+		{ XMFLOAT3(-0.5f, 0.5f, -0.5f), XMFLOAT3(1.0f, 1.0f, 0.5f) },
+		{ XMFLOAT3(0.5f, 0.5f, -0.5f), XMFLOAT3(1.0f, 1.0f, 0.5f) },
+		{ XMFLOAT3(0.5f, 0.5f, 0.5f), XMFLOAT3(1.0f, 1.0f, 0.5f) },
+		{ XMFLOAT3(-0.5f, 0.5f, 0.5f), XMFLOAT3(1.0f, 1.0f, 0.5f) },
+		{ XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT3(1.0f, 0.0f, 0.0f) },
 
 
 	};
@@ -349,7 +558,7 @@ void Sample3DSceneRenderer::CreatePyramid() {
 		m_deviceResources->GetD3DDevice()->CreateBuffer(
 			&vertexBufferDesc,
 			&vertexBufferData,
-			&m_vertexBuffer
+			&m_PyramidvertexBuffer
 		)
 	);
 
@@ -376,7 +585,7 @@ void Sample3DSceneRenderer::CreatePyramid() {
 
 
 
-	m_indexCount = ARRAYSIZE(pyramidIndices);
+	m_PyramidindexCount = ARRAYSIZE(pyramidIndices);
 
 	D3D11_SUBRESOURCE_DATA	indexBufferData = { 0 };
 	indexBufferData.pSysMem = pyramidIndices;
@@ -387,7 +596,7 @@ void Sample3DSceneRenderer::CreatePyramid() {
 		m_deviceResources->GetD3DDevice()->CreateBuffer(
 			&indexBufferDesc,
 			&indexBufferData,
-			&m_indexBuffer
+			&m_PyramidindexBuffer
 		)
 	);
 
@@ -396,10 +605,10 @@ void Sample3DSceneRenderer::CreatePyramid() {
 void Sample3DSceneRenderer::ReleaseDeviceDependentResources()
 {
 	m_loadingComplete = false;
-	m_vertexShader.Reset();
-	m_inputLayout.Reset();
-	m_pixelShader.Reset();
-	m_constantBuffer.Reset();
-	m_vertexBuffer.Reset();
-	m_indexBuffer.Reset();
+	m_CubeVertexShader.Reset();
+	m_CubeInputLayout.Reset();
+	m_CubePixelShader.Reset();
+	m_CubeConstantBuffer.Reset();
+	m_CubeVertexBuffer.Reset();
+	m_CubeIndexBuffer.Reset();
 }

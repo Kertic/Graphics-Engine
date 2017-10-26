@@ -12,7 +12,7 @@ namespace Graphics2Project
 	public:
 		Sample3DSceneRenderer(const std::shared_ptr<DX::DeviceResources>& deviceResources);
 		void CreateDeviceDependentResources();
-		void CreatePyramid();
+		
 		void CreateWindowSizeDependentResources();
 		void ReleaseDeviceDependentResources();
 		void Update(DX::StepTimer const& timer);
@@ -46,7 +46,7 @@ namespace Graphics2Project
 		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_PyramidconstantBuffer;
 
 		// System resources for cube geometry.
-		ModelViewProjectionConstantBuffer	m_constantBufferData;
+		ModelViewProjectionConstantBuffer	m_CubeConstantBufferData;
 		uint32	m_indexCount;
 
 		ModelViewProjectionConstantBuffer	m_PyramidconstantBufferData;

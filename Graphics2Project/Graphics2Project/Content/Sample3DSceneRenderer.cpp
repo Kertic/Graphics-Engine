@@ -55,18 +55,24 @@ void Sample3DSceneRenderer::CreateWindowSizeDependentResources()
 	XMFLOAT4X4 orientation = m_deviceResources->GetOrientationTransform3D();
 
 	XMMATRIX orientationMatrix = XMLoadFloat4x4(&orientation);
-
+	//Cube
 	XMStoreFloat4x4(
-		&m_constantBufferData.projection,
+		&m_CubeConstantBufferData.projection,
 		XMMatrixTranspose(perspectiveMatrix * orientationMatrix)
 	);
 
+	//Pyramid
+	XMStoreFloat4x4(
+		&m_PyramidconstantBufferData.projection,
+		XMMatrixTranspose(perspectiveMatrix * orientationMatrix)
+	);
 	// Eye is at (0,0.7,1.5), looking at point (0,-0.1,0) with the up-vector along the y-axis.
 	static const XMVECTORF32 eye = { 0.0f, 0.7f, 1.5f, 0.0f };
 	static const XMVECTORF32 at = { 0.0f, -0.1f, 0.0f, 0.0f };
 	static const XMVECTORF32 up = { 0.0f, 1.0f, 0.0f, 0.0f };
 
-	XMStoreFloat4x4(&m_constantBufferData.view, XMMatrixTranspose(XMMatrixLookAtRH(eye, at, up)));
+	XMStoreFloat4x4(&m_CubeConstantBufferData.view, XMMatrixTranspose(XMMatrixLookAtRH(eye, at, up)));
+	XMStoreFloat4x4(&m_PyramidconstantBufferData.view, XMMatrixTranspose(XMMatrixLookAtRH(eye, at, up)));
 }
 
 // Called once per frame, rotates the cube and calculates the model and view matrices.
@@ -90,7 +96,7 @@ void Sample3DSceneRenderer::Update(DX::StepTimer const& timer)
 void Sample3DSceneRenderer::Rotate(float radians)
 {
 	// Prepare to pass the updated model matrix to the shader
-	XMStoreFloat4x4(&m_constantBufferData.model, XMMatrixTranspose(XMMatrixRotationY(radians)));
+	XMStoreFloat4x4(&m_CubeConstantBufferData.model, XMMatrixTranspose(XMMatrixRotationY(radians)));
 }
 
 void Sample3DSceneRenderer::StartTracking()
@@ -132,7 +138,7 @@ void Sample3DSceneRenderer::Render()
 		m_CubeConstantBuffer.Get(),
 		0,
 		NULL,
-		&m_constantBufferData,
+		&m_CubeConstantBufferData,
 		0,
 		0,
 		0
@@ -193,14 +199,14 @@ void Sample3DSceneRenderer::Render()
 
 #pragma region Draw Pyramid
 
-	//Adjust constantBufferData to change pyramid position
+	
 
 	// Prepare the constant buffer to send it to the graphics device.
 	context->UpdateSubresource1(
-		m_CubeConstantBuffer.Get(),
+		m_PyramidconstantBuffer.Get(),
 		0,
 		NULL,
-		&m_constantBufferData,
+		&m_PyramidconstantBufferData,
 		0,
 		0,
 		0
@@ -225,7 +231,7 @@ void Sample3DSceneRenderer::Render()
 
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	context->IASetInputLayout(m_CubeInputLayout.Get());
+	context->IASetInputLayout(m_PyramidinputLayout.Get());
 
 	// Attach our vertex shader.
 	context->VSSetShader(
@@ -376,6 +382,7 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 
 	// Once both shaders are loaded, create the mesh.
 	auto createCubeTask = (createPSTask && createVSTask).then([this]() {
+		
 
 		// Load mesh vertices. Each vertex has a position and a color.
 		static const VertexPositionColor cubeVertices[] =
@@ -390,7 +397,7 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 			{XMFLOAT3(0.5f,  0.5f,  0.5f), XMFLOAT3(1.0f, 1.0f, 1.0f)},
 		};
 
-
+		
 
 		D3D11_SUBRESOURCE_DATA vertexBufferData = { 0 };
 		vertexBufferData.pSysMem = cubeVertices;
@@ -529,78 +536,7 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 
 
 }
-void Sample3DSceneRenderer::CreatePyramid() {
 
-
-
-
-
-
-
-
-	static const VertexPositionColor pyramidVerts[] =
-	{
-		{ XMFLOAT3(-0.5f, 0.5f, -0.5f), XMFLOAT3(1.0f, 1.0f, 0.5f) },
-		{ XMFLOAT3(0.5f, 0.5f, -0.5f), XMFLOAT3(1.0f, 1.0f, 0.5f) },
-		{ XMFLOAT3(0.5f, 0.5f, 0.5f), XMFLOAT3(1.0f, 1.0f, 0.5f) },
-		{ XMFLOAT3(-0.5f, 0.5f, 0.5f), XMFLOAT3(1.0f, 1.0f, 0.5f) },
-		{ XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT3(1.0f, 0.0f, 0.0f) },
-
-
-	};
-
-	D3D11_SUBRESOURCE_DATA vertexBufferData = { 0 };
-	vertexBufferData.pSysMem = pyramidVerts;
-	vertexBufferData.SysMemPitch = 0;
-	vertexBufferData.SysMemSlicePitch = 0;
-	CD3D11_BUFFER_DESC	vertexBufferDesc = CD3D11_BUFFER_DESC(sizeof(pyramidVerts), D3D11_BIND_VERTEX_BUFFER);
-	DX::ThrowIfFailed(
-		m_deviceResources->GetD3DDevice()->CreateBuffer(
-			&vertexBufferDesc,
-			&vertexBufferData,
-			&m_PyramidvertexBuffer
-		)
-	);
-
-	static const unsigned short pyramidIndices[] =
-	{
-		//Bottom face
-		0,1,2,
-		2,3,0,
-
-		//+z
-		3,4,2,
-
-		//-z
-		1,4,0,
-
-		//+x
-		2,4,1,
-
-		//-x
-		0,4,3,
-
-	};
-
-
-
-
-	m_PyramidindexCount = ARRAYSIZE(pyramidIndices);
-
-	D3D11_SUBRESOURCE_DATA	indexBufferData = { 0 };
-	indexBufferData.pSysMem = pyramidIndices;
-	indexBufferData.SysMemPitch = 0;
-	indexBufferData.SysMemSlicePitch = 0;
-	CD3D11_BUFFER_DESC	indexBufferDesc = CD3D11_BUFFER_DESC(sizeof(pyramidIndices), D3D11_BIND_INDEX_BUFFER);
-	DX::ThrowIfFailed(
-		m_deviceResources->GetD3DDevice()->CreateBuffer(
-			&indexBufferDesc,
-			&indexBufferData,
-			&m_PyramidindexBuffer
-		)
-	);
-
-}
 
 void Sample3DSceneRenderer::ReleaseDeviceDependentResources()
 {
@@ -611,4 +547,12 @@ void Sample3DSceneRenderer::ReleaseDeviceDependentResources()
 	m_CubeConstantBuffer.Reset();
 	m_CubeVertexBuffer.Reset();
 	m_CubeIndexBuffer.Reset();
+
+
+	m_PyramidinputLayout.Reset();
+	m_PyramidvertexBuffer.Reset();
+	m_PyramidindexBuffer.Reset();
+	m_PyramidvertexShader.Reset();
+	m_PyramidpixelShader.Reset();
+	m_PyramidconstantBuffer.Reset();
 }

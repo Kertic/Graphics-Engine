@@ -1,25 +1,3 @@
-#include "pch.h"
-#include "Mesh.h"
-
-
-Mesh::Mesh()
-{
-	
-}
-
-void Mesh::LoadMeshFromFile(std::string inFileName)
-{
-	char testString[256];
-	std::vector<XMFLOAT3> Vertexes;
-	std::vector<XMFLOAT3> Normals;
-	std::vector<XMFLOAT2> UVs;
-	//First float is index of the vertex, second float is index of normal, third float is index of UV
-	//Every 3 of these forms one triangle. Each one also creates a Vertex to check if it is unique or not
-	std::vector<XMFLOAT3> PointIndexes;
-	std::ifstream file(inFileName);
-
-
-
 	/*
 	test string
 	vector of strings to hold vertexes
@@ -79,4 +57,3 @@ void Mesh::LoadMeshFromFile(std::string inFileName)
 	}
 	
 	*/
-}

@@ -86,5 +86,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Graphics2Project_TemporaryKey.pfx" />
+    <None Include="Assets\test pyramid.obj">
+      <Filter>Assets</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -2,6 +2,7 @@
 #include "Sample3DSceneRenderer.h"
 #include "Mesh.h"
 
+
 #include "..\Common\DirectXHelper.h"
 
 using namespace Graphics2Project;
@@ -377,6 +378,8 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 		);
 #pragma endregion
 	
+		Mesh testMesh;
+		testMesh.LoadMeshFromFile("Assets/test pyramid.obj");
 
 
 	});

@@ -1,5 +1,6 @@
 ﻿#include "pch.h"
 #include "Sample3DSceneRenderer.h"
+#include "Mesh.h"
 
 #include "..\Common\DirectXHelper.h"
 
@@ -375,7 +376,7 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 			)
 		);
 #pragma endregion
-
+	
 
 
 	});

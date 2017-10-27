@@ -67,12 +67,14 @@
     <ClCompile Include="App.cpp" />
     <ClCompile Include="Graphics2ProjectMain.cpp" />
     <ClCompile Include="pch.cpp" />
+    <ClCompile Include="Mesh.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.h" />
     <ClInclude Include="Graphics2ProjectMain.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="defines.h" />
+    <ClInclude Include="Mesh.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Assets\StoreLogo.png">

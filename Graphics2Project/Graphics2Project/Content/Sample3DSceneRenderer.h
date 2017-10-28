@@ -4,6 +4,8 @@
 #include "ShaderStructures.h"
 #include "..\Common\StepTimer.h"
 
+#include "defines.h"
+
 namespace Graphics2Project
 {
 	// This sample renderer instantiates a basic rendering pipeline.
@@ -12,7 +14,7 @@ namespace Graphics2Project
 	public:
 		Sample3DSceneRenderer(const std::shared_ptr<DX::DeviceResources>& deviceResources);
 		void CreateDeviceDependentResources();
-		
+		void CreateCustomMesh();
 		void CreateWindowSizeDependentResources();
 		void ReleaseDeviceDependentResources();
 		void Update(DX::StepTimer const& timer);
@@ -45,12 +47,22 @@ namespace Graphics2Project
 		Microsoft::WRL::ComPtr<ID3D11PixelShader>	m_PyramidpixelShader;
 		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_PyramidconstantBuffer;
 
+		Microsoft::WRL::ComPtr<ID3D11InputLayout>	m_CustomMeshInputLayout;
+		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_CustomMeshVertexBuffer;
+		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_CustomMeshIndexBuffer;
+		Microsoft::WRL::ComPtr<ID3D11VertexShader>	m_CustomMeshVertexShader;
+		Microsoft::WRL::ComPtr<ID3D11PixelShader>	m_CustomMeshPixelShader;
+		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_CustomMeshConstantBuffer;
+
 		// System resources for cube geometry.
 		ModelViewProjectionConstantBuffer	m_CubeConstantBufferData;
-		uint32	m_indexCount;
+		uint32	m_CubeIndexCount;
 
 		ModelViewProjectionConstantBuffer	m_PyramidconstantBufferData;
 		uint32	m_PyramidindexCount;
+
+		ModelViewProjectionConstantBuffer	m_CustomMeshConstantBufferData;
+		uint32	m_CustomMeshIndexCount;
 
 		// Variables used with the rendering loop.
 		bool	m_loadingComplete;

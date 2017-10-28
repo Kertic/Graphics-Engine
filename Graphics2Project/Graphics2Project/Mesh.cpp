@@ -132,62 +132,6 @@ void Mesh::LoadMeshFromFile(std::string inFileName)
 						std::string vertexIndexString;
 						std::string normalIndexString;
 						std::string UVindexString;
-#pragma region Point 0
-
-
-
-						for (unsigned int j = 0, currentIndex = 0; j < Terms[0].size(); ++j)
-						{
-							if (Terms[0][j] != '/') 
-							{
-								if (currentIndex == 0)
-									vertexIndexString.append(1, Terms[0][j]);
-								if (currentIndex == 1)
-									normalIndexString.append(1, Terms[0][j]);
-								if (currentIndex == 2)
-									UVindexString.append(1, Terms[0][j]);
-							}
-							else 
-							{
-								++currentIndex;
-							}
-						}
-						//Push a new XMFLOAT3 into PointIndexes with input (term[0][0], term[0][2], term[0][4]) //Push the first index's x,y,and z which translate to a vertex index, normal index, and UV index
-
-						PointIndexes.push_back(XMINT3(std::stoi(vertexIndexString), std::stoi(normalIndexString), std::stoi(UVindexString)));
-						vertexIndexString.clear();
-						normalIndexString.clear();
-						UVindexString.clear();
-#pragma endregion
-#pragma region Point i-1
-
-
-
-						for (unsigned int j = 0, currentIndex = 0; j < Terms[i-1].size(); ++j)
-						{
-							if (Terms[i-1][j] != '/')
-							{
-								if (currentIndex == 0)
-									vertexIndexString.append(1, Terms[i - 1][j]);
-								if (currentIndex == 1)
-									normalIndexString.append(1, Terms[i - 1][j]);
-								if (currentIndex == 2)
-									UVindexString.append(1, Terms[i - 1][j]);
-							}
-							else
-							{
-								++currentIndex;
-							}
-						}
-
-
-						//Push a new XMFLOAT3 into PointIndexes with input (term[i-1][0], term[i-1][2], term[i-1][4]) //Push the i-1's index's x,y, and z
-						PointIndexes.push_back(XMINT3(std::stoi(vertexIndexString), std::stoi(normalIndexString), std::stoi(UVindexString)));
-						vertexIndexString.clear();
-						normalIndexString.clear();
-						UVindexString.clear();
-						
-#pragma endregion
 #pragma region Point i
 
 
@@ -199,9 +143,9 @@ void Mesh::LoadMeshFromFile(std::string inFileName)
 								if (currentIndex == 0)
 									vertexIndexString.append(1, Terms[i][j]);
 								if (currentIndex == 1)
-									normalIndexString.append(1, Terms[i][j]);
-								if (currentIndex == 2)
 									UVindexString.append(1, Terms[i][j]);
+								if (currentIndex == 2)
+									normalIndexString.append(1, Terms[i][j]);
 							}
 							else
 							{
@@ -211,12 +155,70 @@ void Mesh::LoadMeshFromFile(std::string inFileName)
 
 
 						//Push a new XMFLOAT3 into PointIndexes with input (term[i][0], term[i][2], term[i][4]) //Push the i's index's x,y, and z 
-						PointIndexes.push_back(XMINT3(std::stoi(vertexIndexString), std::stoi(normalIndexString), std::stoi(UVindexString)));
+						PointIndexes.push_back(XMINT3(std::stoi(vertexIndexString), std::stoi(UVindexString), std::stoi(normalIndexString)));
 						vertexIndexString.clear();
 						normalIndexString.clear();
 						UVindexString.clear();
-						
+
 #pragma endregion
+#pragma region Point i-1
+
+
+
+						for (unsigned int j = 0, currentIndex = 0; j < Terms[i - 1].size(); ++j)
+						{
+							if (Terms[i - 1][j] != '/')
+							{
+								if (currentIndex == 0)
+									vertexIndexString.append(1, Terms[i - 1][j]);
+								if (currentIndex == 1)
+									UVindexString.append(1, Terms[i - 1][j]);
+								if (currentIndex == 2)
+									normalIndexString.append(1, Terms[i - 1][j]);
+							}
+							else
+							{
+								++currentIndex;
+							}
+						}
+
+
+						//Push a new XMFLOAT3 into PointIndexes with input (term[i-1][0], term[i-1][2], term[i-1][4]) //Push the i-1's index's x,y, and z
+						PointIndexes.push_back(XMINT3(std::stoi(vertexIndexString), std::stoi(UVindexString), std::stoi(normalIndexString)));
+						vertexIndexString.clear();
+						normalIndexString.clear();
+						UVindexString.clear();
+
+#pragma endregion
+#pragma region Point 0
+
+
+
+						for (unsigned int j = 0, currentIndex = 0; j < Terms[0].size(); ++j)
+						{
+							if (Terms[0][j] != '/') 
+							{
+								if (currentIndex == 0)
+									vertexIndexString.append(1, Terms[0][j]);
+								if (currentIndex == 1)
+									UVindexString.append(1, Terms[0][j]);
+								if (currentIndex == 2)
+									normalIndexString.append(1, Terms[0][j]);
+							}
+							else 
+							{
+								++currentIndex;
+							}
+						}
+						//Push a new XMFLOAT3 into PointIndexes with input (term[0][0], term[0][2], term[0][4]) //Push the first index's x,y,and z which translate to a vertex index, normal index, and UV index
+
+						PointIndexes.push_back(XMINT3(std::stoi(vertexIndexString),  std::stoi(UVindexString), std::stoi(normalIndexString)));
+						vertexIndexString.clear();
+						normalIndexString.clear();
+						UVindexString.clear();
+#pragma endregion
+
+
 					}
 
 				}
@@ -226,10 +228,39 @@ void Mesh::LoadMeshFromFile(std::string inFileName)
 		}
 		file.close();
 	}
+
+	//Create the unique vertex list and corresponding indicies
+	for (unsigned int i = 0; i < PointIndexes.size(); i++)
+	{
+		PositionNormalUV VertexToCheck;
+		VertexToCheck.m_position = Vertexes[PointIndexes[i].x - 1];
+		VertexToCheck.m_UVcoords = UVs[PointIndexes[i].y - 1];
+		VertexToCheck.m_normalVec = Normals[PointIndexes[i].z - 1];
+
+		bool exists = false;
+
+		unsigned int indexOfUniqueVertex = 0;
+
+		for (unsigned int j = 0; j < UniqueVertexArray.size(); j++)
+		{
+			if (VertexToCheck == UniqueVertexArray[j]) {
+				exists = true;
+				indexOfUniqueVertex = j;
+			}
+		}
+
+		if (!exists) {//If it doesnt exist, we make it
+			UniqueVertexArray.push_back(VertexToCheck);//Put the vertex in the unique list
+			indexOfUniqueVertex = UniqueVertexArray.size() - 1;//Mark its index in our variable
+		}
+
+		TrianglePointIndexes.push_back(indexOfUniqueVertex);
+
+	}
+	TrianglePointIndexes.shrink_to_fit();
+	UniqueVertexArray.shrink_to_fit();
+	
 #pragma region Pseudocode for loading file info
-
-
-
 	/*
 	test string
 	vector of strings to hold vertexes
@@ -313,5 +344,37 @@ void Mesh::LoadMeshFromFile(std::string inFileName)
 	*/
 #pragma endregion
 
+
+}
+
+bool PositionNormalUV::operator==(const PositionNormalUV & testSubject)
+{
+#pragma region Compare Position
+	if (this->m_position.x != testSubject.m_position.x)
+		return false;
+	if (this->m_position.y != testSubject.m_position.y)
+		return false;
+	if (this->m_position.z != testSubject.m_position.z)
+		return false;
+#pragma endregion
+#pragma region Compare Normals
+	if (this->m_normalVec.x != testSubject.m_normalVec.x)
+		return false;
+	if (this->m_normalVec.y != testSubject.m_normalVec.y)
+		return false;
+	if (this->m_normalVec.z != testSubject.m_normalVec.z)
+		return false;
+#pragma endregion
+#pragma region Compare UV's'
+	if (this->m_UVcoords.x != testSubject.m_UVcoords.x)
+		return false;
+	if (this->m_UVcoords.y != testSubject.m_UVcoords.y)
+		return false;
+#pragma endregion
+	return true;
+
+
+
+	
 
 }

@@ -10,22 +10,25 @@ using namespace DirectX;
 
 
 
-struct PositionNormalUV
+struct  PositionNormalUV
 {
 	XMFLOAT3 m_position;
 	XMFLOAT3 m_normalVec;
 	XMFLOAT2 m_UVcoords;
+
+	bool operator ==(const PositionNormalUV &testSubject);
 };
 
 
 
 
-class Mesh sealed
+class Mesh 
 {
-	std::vector<PositionNormalUV> UniqueVertexArray;
-	std::vector<XMINT3> TrianglePointIndexes;
+
 	
 public:
+	std::vector<PositionNormalUV> UniqueVertexArray;
+	std::vector<unsigned int> TrianglePointIndexes;
 	Mesh();
 	void LoadMeshFromFile(std::string inFileName);
 };

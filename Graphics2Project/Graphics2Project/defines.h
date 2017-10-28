@@ -4,4 +4,4 @@
 
 
 
-#define CAMERA_YROTATION 70.0f
+#define _TRANSLATEMODELS

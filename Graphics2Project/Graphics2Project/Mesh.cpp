@@ -15,7 +15,7 @@ void Mesh::LoadMeshFromFile(std::string inFileName)
 	std::vector<XMFLOAT2> UVs;
 	//First float is index of the vertex, second float is index of normal, third float is index of UV
 	//Every 3 of these forms one triangle. Each one also creates a Vertex to check if it is unique or not
-	std::vector<XMFLOAT3> PointIndexes;
+	std::vector<XMINT3> PointIndexes;
 	std::ifstream file(inFileName);
 	if (file.is_open()) {
 		while (std::getline(file, testString))
@@ -85,7 +85,7 @@ void Mesh::LoadMeshFromFile(std::string inFileName)
 					std::string Vchar;
 					std::string Xfloat;
 					std::string Yfloat;
-					
+
 
 					unsigned int termCount = 0;
 					for (unsigned int i = 0; i < testString.length(); ++i) {
@@ -107,7 +107,118 @@ void Mesh::LoadMeshFromFile(std::string inFileName)
 #pragma endregion
 #pragma region Faces / Indexes
 				if (testString.c_str()[0] == 'f' && testString.c_str()[1] == ' ') {
-					
+					std::vector<std::string> Terms;
+
+					unsigned int currentTerm = 0;
+					Terms.push_back(std::string());
+
+					//Create a string for each "term" on the line
+					for (unsigned int i = 0; i < testString.length(); ++i) {
+						Terms[currentTerm].append(1, testString[i]);
+
+						if (testString[i] == ' ') {
+							++currentTerm;
+							Terms.push_back(std::string());
+						}
+					}
+					//Erase the "f" terms so we're left with just the numbers
+					Terms.erase(Terms.begin());
+
+
+					for (unsigned int i = 2; i < Terms.size(); ++i) {
+
+						
+
+						std::string vertexIndexString;
+						std::string normalIndexString;
+						std::string UVindexString;
+#pragma region Point 0
+
+
+
+						for (unsigned int j = 0, currentIndex = 0; j < Terms[0].size(); ++j)
+						{
+							if (Terms[0][j] != '/') 
+							{
+								if (currentIndex == 0)
+									vertexIndexString.append(1, Terms[0][j]);
+								if (currentIndex == 1)
+									normalIndexString.append(1, Terms[0][j]);
+								if (currentIndex == 2)
+									UVindexString.append(1, Terms[0][j]);
+							}
+							else 
+							{
+								++currentIndex;
+							}
+						}
+						//Push a new XMFLOAT3 into PointIndexes with input (term[0][0], term[0][2], term[0][4]) //Push the first index's x,y,and z which translate to a vertex index, normal index, and UV index
+
+						PointIndexes.push_back(XMINT3(std::stoi(vertexIndexString), std::stoi(normalIndexString), std::stoi(UVindexString)));
+						vertexIndexString.clear();
+						normalIndexString.clear();
+						UVindexString.clear();
+#pragma endregion
+#pragma region Point i-1
+
+
+
+						for (unsigned int j = 0, currentIndex = 0; j < Terms[i-1].size(); ++j)
+						{
+							if (Terms[i-1][j] != '/')
+							{
+								if (currentIndex == 0)
+									vertexIndexString.append(1, Terms[i - 1][j]);
+								if (currentIndex == 1)
+									normalIndexString.append(1, Terms[i - 1][j]);
+								if (currentIndex == 2)
+									UVindexString.append(1, Terms[i - 1][j]);
+							}
+							else
+							{
+								++currentIndex;
+							}
+						}
+
+
+						//Push a new XMFLOAT3 into PointIndexes with input (term[i-1][0], term[i-1][2], term[i-1][4]) //Push the i-1's index's x,y, and z
+						PointIndexes.push_back(XMINT3(std::stoi(vertexIndexString), std::stoi(normalIndexString), std::stoi(UVindexString)));
+						vertexIndexString.clear();
+						normalIndexString.clear();
+						UVindexString.clear();
+						
+#pragma endregion
+#pragma region Point i
+
+
+
+						for (unsigned int j = 0, currentIndex = 0; j < Terms[i].size(); ++j)
+						{
+							if (Terms[i][j] != '/')
+							{
+								if (currentIndex == 0)
+									vertexIndexString.append(1, Terms[i][j]);
+								if (currentIndex == 1)
+									normalIndexString.append(1, Terms[i][j]);
+								if (currentIndex == 2)
+									UVindexString.append(1, Terms[i][j]);
+							}
+							else
+							{
+								++currentIndex;
+							}
+						}
+
+
+						//Push a new XMFLOAT3 into PointIndexes with input (term[i][0], term[i][2], term[i][4]) //Push the i's index's x,y, and z 
+						PointIndexes.push_back(XMINT3(std::stoi(vertexIndexString), std::stoi(normalIndexString), std::stoi(UVindexString)));
+						vertexIndexString.clear();
+						normalIndexString.clear();
+						UVindexString.clear();
+						
+#pragma endregion
+					}
+
 				}
 #pragma endregion
 
@@ -115,6 +226,9 @@ void Mesh::LoadMeshFromFile(std::string inFileName)
 		}
 		file.close();
 	}
+#pragma region Pseudocode for loading file info
+
+
 
 	/*
 	test string
@@ -138,11 +252,33 @@ void Mesh::LoadMeshFromFile(std::string inFileName)
 
 		IF that line begins with "f "
 		find out how many terms there are where a "term" is a set of characters seperated by " "																	1    2     3     4   5
-		Create an array with n-1 terms, starting with the 2nd term (to skip the f) called terms. (This is a char array of [n-1][5], where the [5] is formatted "vertIndex/normalIndex/UVindex")
+		Create an array with n-1 terms, starting with the 2nd term (to skip the f) called terms. (This is a char array of [n-1][x], where the [x] is formatted "vertIndex/normalIndex/UVindex")
 			for(i = 2; i < terms.Length; ++i){
-				Push a new XMFLOAT3 into PointIndexes with input (term[0][0], term[0][2], term[0][4])
-				Push a new XMFLOAT3 into PointIndexes with input (term[i-1][0], term[i-1][2], term[i-1][4])
-				Push a new XMFLOAT3 into PointIndexes with input (term[i][0], term[i][2], term[i][4])
+
+			unsigned int vertexIndex = 0;
+			unsigned int normalIndex = 0;
+			unsigned int UVindex = 0;
+
+
+			for(unsigned int j = 0, unsigned int currentIndex = 0, string vertexIndexString, string normalIndexString, string UVindexString; j<term[0].length; ++j){
+				if(term[0][j] != '/'){
+					if(currentIndex == 0)
+						vertexIndexString.append(term[0][j]);
+					if(currentIndex == 1)
+						normalIndexString.append(term[0][j]);
+					if(currentIndex == 2)
+						UVindexString.append(term[0][j]);
+				}
+				else{
+				++currentTerm;
+				}
+			}
+
+
+
+				//Push a new XMFLOAT3 into PointIndexes with input (term[0][0], term[0][2], term[0][4]) //Push the first index's x,y,and z which translate to a vertex index, normal index, and UV index
+				//Push a new XMFLOAT3 into PointIndexes with input (term[i-1][0], term[i-1][2], term[i-1][4]) //Push the i-1's index's x,y, and z
+				//Push a new XMFLOAT3 into PointIndexes with input (term[i][0], term[i][2], term[i][4]) //Push the i's index's x,y, and z
 			}
 
 
@@ -175,4 +311,7 @@ void Mesh::LoadMeshFromFile(std::string inFileName)
 	}
 
 	*/
+#pragma endregion
+
+
 }

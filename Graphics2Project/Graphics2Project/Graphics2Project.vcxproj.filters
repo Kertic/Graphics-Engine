@@ -90,4 +90,9 @@
       <Filter>Assets</Filter>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Content\InstancedVertexShader.hlsl">
+      <Filter>Content</Filter>
+    </FxCompile>
+  </ItemGroup>
 </Project>

@@ -46,6 +46,7 @@ namespace Graphics2Project
 		Microsoft::WRL::ComPtr<ID3D11VertexShader>	m_PyramidvertexShader;
 		Microsoft::WRL::ComPtr<ID3D11PixelShader>	m_PyramidpixelShader;
 		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_PyramidconstantBuffer;
+		static const unsigned int m_PyramidCount = 5;
 
 		Microsoft::WRL::ComPtr<ID3D11InputLayout>	m_CustomMeshInputLayout;
 		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_CustomMeshVertexBuffer;
@@ -58,7 +59,7 @@ namespace Graphics2Project
 		ModelViewProjectionConstantBuffer	m_CubeConstantBufferData;
 		uint32	m_CubeIndexCount;
 
-		ModelViewProjectionConstantBuffer	m_PyramidconstantBufferData;
+		 ModelViewProjectionConstantBuffer	m_PyramidconstantBufferData;
 		uint32	m_PyramidindexCount;
 
 		ModelViewProjectionConstantBuffer	m_CustomMeshConstantBufferData;

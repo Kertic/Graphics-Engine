@@ -64,6 +64,7 @@ void Sample3DSceneRenderer::CreateWindowSizeDependentResources()
 	);
 
 	//Pyramid
+
 	XMStoreFloat4x4(
 		&m_PyramidconstantBufferData.projection,
 		XMMatrixTranspose(perspectiveMatrix * orientationMatrix)
@@ -80,8 +81,12 @@ void Sample3DSceneRenderer::CreateWindowSizeDependentResources()
 	static const XMVECTORF32 up = { 0.0f, 1.0f, 0.0f, 0.0f };
 
 	XMStoreFloat4x4(&m_CubeConstantBufferData.view, XMMatrixTranspose(XMMatrixLookAtRH(eye, at, up)));
-	XMStoreFloat4x4(&m_PyramidconstantBufferData.view, XMMatrixTranspose(XMMatrixLookAtRH(eye, at, up)));
+
 	XMStoreFloat4x4(&m_CustomMeshConstantBufferData.view, XMMatrixTranspose(XMMatrixLookAtRH(eye, at, up)));
+
+
+	XMStoreFloat4x4(&m_PyramidconstantBufferData.view, XMMatrixTranspose(XMMatrixLookAtRH(eye, at, up)));
+
 
 }
 
@@ -106,7 +111,27 @@ void Sample3DSceneRenderer::Update(DX::StepTimer const& timer)
 void Sample3DSceneRenderer::Rotate(float radians)
 {
 	// Prepare to pass the updated model matrix to the shader
-	XMStoreFloat4x4(&m_CubeConstantBufferData.model, XMMatrixTranspose(XMMatrixRotationY(radians)));
+	XMStoreFloat4x4(&m_CubeConstantBufferData.model[0], XMMatrixTranspose(XMMatrixRotationY(radians)));
+	XMStoreFloat4x4(&m_CustomMeshConstantBufferData.model[0], XMMatrixTranspose(XMMatrixTranslation(1.25f, 0.0f, 0.25f)));
+#pragma region Independant Pyramid Transformations
+	XMStoreFloat4x4(&m_PyramidconstantBufferData.model[0], XMMatrixTranspose(XMMatrixRotationY(-radians)));
+	//XMStoreFloat4x4(&m_PyramidconstantBufferData.model[1], XMMatrixTranspose(XMMatrixRotationY(radians)));
+	
+	XMStoreFloat4x4(
+		&m_PyramidconstantBufferData.model[1],
+			XMMatrixMultiply(
+				XMMatrixTranspose(XMMatrixTranslation(1.0f, 0.0f, 0.0f)),
+				XMMatrixTranspose(XMMatrixRotationY(radians))
+			)
+	);
+
+	XMStoreFloat4x4(&m_PyramidconstantBufferData.model[2], XMMatrixTranspose(XMMatrixTranslation(-1.25f, 0.0f, 0.0f)));
+	XMStoreFloat4x4(&m_PyramidconstantBufferData.model[3], XMMatrixTranspose(XMMatrixTranslation(-1.25f, -1.25f, 0.0f)));
+	XMStoreFloat4x4(&m_PyramidconstantBufferData.model[4], XMMatrixTranspose(XMMatrixTranslation(-1.25f, -1.25f, -1.25f)));
+#pragma endregion
+
+
+
 }
 
 void Sample3DSceneRenderer::StartTracking()
@@ -209,7 +234,7 @@ void Sample3DSceneRenderer::Render()
 
 #pragma region Draw Pyramid
 
-	
+
 
 	// Prepare the constant buffer to send it to the graphics device.
 	context->UpdateSubresource1(
@@ -245,7 +270,7 @@ void Sample3DSceneRenderer::Render()
 
 	// Attach our vertex shader.
 	context->VSSetShader(
-		m_CubeVertexShader.Get(),
+		m_PyramidvertexShader.Get(),
 		nullptr,
 		0
 	);
@@ -254,24 +279,21 @@ void Sample3DSceneRenderer::Render()
 	context->VSSetConstantBuffers1(
 		0,
 		1,
-		m_CubeConstantBuffer.GetAddressOf(),
+		m_PyramidconstantBuffer.GetAddressOf(),
 		nullptr,
 		nullptr
 	);
 
 	// Attach our pixel shader.
 	context->PSSetShader(
-		m_CubePixelShader.Get(),
+		m_PyramidpixelShader.Get(),
 		nullptr,
 		0
 	);
 
 	// Draw the objects.
-	context->DrawIndexed(
-		m_PyramidindexCount,
-		0,
-		0
-	);
+	//context->DrawIndexed(m_PyramidindexCount, 0, 0);
+	context->DrawIndexedInstanced(m_PyramidindexCount, m_PyramidCount, 0, 0, 0);
 
 #pragma endregion
 
@@ -291,8 +313,8 @@ void Sample3DSceneRenderer::Render()
 	);
 
 	// Each vertex is one instance of the VertexPositionColor struct.
-	 stride = sizeof(VertexPositionColor);
-	 offset = 0;
+	stride = sizeof(VertexPositionColor);
+	offset = 0;
 	context->IASetVertexBuffers(
 		0,
 		1,
@@ -313,7 +335,7 @@ void Sample3DSceneRenderer::Render()
 
 	// Attach our vertex shader.
 	context->VSSetShader(
-		m_CubeVertexShader.Get(),
+		m_CustomMeshVertexShader.Get(),
 		nullptr,
 		0
 	);
@@ -322,14 +344,14 @@ void Sample3DSceneRenderer::Render()
 	context->VSSetConstantBuffers1(
 		0,
 		1,
-		m_CubeConstantBuffer.GetAddressOf(),
+		m_CustomMeshConstantBuffer.GetAddressOf(),
 		nullptr,
 		nullptr
 	);
 
 	// Attach our pixel shader.
 	context->PSSetShader(
-		m_CubePixelShader.Get(),
+		m_CustomMeshPixelShader.Get(),
 		nullptr,
 		0
 	);
@@ -350,7 +372,7 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 
 
 	// Load shaders asynchronously.
-	auto loadVSTask = DX::ReadDataAsync(L"SampleVertexShader.cso");
+	auto loadVSTask = DX::ReadDataAsync(L"InstancedVertexShader.cso");
 	auto loadPSTask = DX::ReadDataAsync(L"SamplePixelShader.cso");
 
 	// After the vertex shader file is loaded, create the shader and input layout.
@@ -414,7 +436,7 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 #pragma endregion
 
 #pragma region Custom Mesh
-				DX::ThrowIfFailed(
+		DX::ThrowIfFailed(
 			m_deviceResources->GetD3DDevice()->CreateVertexShader(
 				&fileData[0],
 				fileData.size(),
@@ -500,7 +522,7 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 			)
 		);
 #pragma endregion
-	
+
 
 
 
@@ -508,7 +530,7 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 
 	// Once both shaders are loaded, create the mesh.
 	auto createCubeTask = (createPSTask && createVSTask).then([this]() {
-		
+
 #pragma region Create cube verts
 
 
@@ -526,7 +548,7 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 			{XMFLOAT3(0.5f,  0.5f,  0.5f), XMFLOAT3(1.0f, 1.0f, 1.0f)},
 		};
 
-		
+
 
 		D3D11_SUBRESOURCE_DATA vertexBufferData = { 0 };
 		vertexBufferData.pSysMem = cubeVertices;
@@ -679,11 +701,16 @@ void Sample3DSceneRenderer::CreateCustomMesh()
 	std::vector<short> MeshIndexes;
 	for (unsigned int i = 0; i < testMesh.UniqueVertexArray.size(); i++)
 	{
-		MeshVerts.push_back({ XMFLOAT3(testMesh.UniqueVertexArray[i].m_position),XMFLOAT3(testMesh.UniqueVertexArray[i].m_normalVec) });
+		MeshVerts.push_back({ XMFLOAT3(testMesh.UniqueVertexArray[i].m_position),
+			XMFLOAT3(
+				(float)i / (float)testMesh.UniqueVertexArray.size(),
+				(float)i / (float)testMesh.UniqueVertexArray.size(),
+				(float)i / (float)testMesh.UniqueVertexArray.size()) });
+
 #ifdef _TRANSLATEMODELS
 		MeshVerts[MeshVerts.size() - 1].pos.x += 0.5f;
 #endif
-	}
+		}
 	MeshVerts.shrink_to_fit();
 	for (unsigned int i = 0; i < testMesh.TrianglePointIndexes.size(); i++)
 	{
@@ -692,7 +719,7 @@ void Sample3DSceneRenderer::CreateCustomMesh()
 	MeshIndexes.shrink_to_fit();
 #pragma endregion
 #pragma region Create Mesh Verts 2
-	
+
 	D3D11_SUBRESOURCE_DATA vertexBufferData = { 0 };
 	vertexBufferData.pSysMem = MeshVerts.data();
 	vertexBufferData.SysMemPitch = 0;
@@ -721,7 +748,7 @@ void Sample3DSceneRenderer::CreateCustomMesh()
 		)
 	);
 #pragma endregion
-}
+	}
 
 
 void Sample3DSceneRenderer::ReleaseDeviceDependentResources()

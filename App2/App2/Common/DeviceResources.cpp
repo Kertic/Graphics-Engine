@@ -148,7 +148,11 @@ void DX::DeviceResources::CreateDeviceResources()
 		D3D_FEATURE_LEVEL_12_0,
 		D3D_FEATURE_LEVEL_11_1,
 		D3D_FEATURE_LEVEL_11_0,
-
+		D3D_FEATURE_LEVEL_10_1,
+		D3D_FEATURE_LEVEL_10_0,
+		D3D_FEATURE_LEVEL_9_3,
+		D3D_FEATURE_LEVEL_9_2,
+		D3D_FEATURE_LEVEL_9_1
 	};
 
 	// Create the Direct3D 11 API device object and a corresponding context.
@@ -157,7 +161,7 @@ void DX::DeviceResources::CreateDeviceResources()
 
 	HRESULT hr = D3D11CreateDevice(
 		nullptr,					// Specify nullptr to use the default adapter.
-		D3D_DRIVER_TYPE_WARP,	// Create a device using the hardware graphics driver.
+		D3D_DRIVER_TYPE_HARDWARE,	// Create a device using the hardware graphics driver.
 		0,							// Should be 0 unless the driver is D3D_DRIVER_TYPE_SOFTWARE.
 		creationFlags,				// Set debug and Direct2D compatibility flags.
 		featureLevels,				// List of feature levels this app can support.
@@ -277,7 +281,7 @@ void DX::DeviceResources::CreateWindowSizeDependentResources()
 		swapChainDesc.SampleDesc.Count = 1;								// Don't use multi-sampling.
 		swapChainDesc.SampleDesc.Quality = 0;
 		swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-		swapChainDesc.BufferCount = 2;									// Use double-buffering to minimize latency.
+		swapChainDesc.BufferCount = 3;									// Use double-buffering to minimize latency.
 		swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;	// All Windows Store apps must use this SwapEffect.
 		swapChainDesc.Flags = 0;
 		swapChainDesc.Scaling = scaling;
@@ -490,6 +494,12 @@ void DX::DeviceResources::SetWindow(CoreWindow^ window)
 	CreateWindowSizeDependentResources();
 }
 
+
+Windows::UI::Core::CoreWindow^ DX::DeviceResources::GetWindow(void)
+{
+	return m_window.Get();
+}
+
 // This method is called in the event handler for the SizeChanged event.
 void DX::DeviceResources::SetLogicalSize(Windows::Foundation::Size logicalSize)
 {
@@ -616,6 +626,10 @@ void DX::DeviceResources::Trim()
 // Present the contents of the swap chain to the screen.
 void DX::DeviceResources::Present() 
 {
+
+
+	
+
 	// The first argument instructs DXGI to block until VSync, putting the application
 	// to sleep until the next VSync. This ensures we don't waste any cycles rendering
 	// frames that will never be displayed to the screen.

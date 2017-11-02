@@ -1,14 +1,16 @@
 ﻿#include "pch.h"
-#include "Graphics2ProjectMain.h"
+#include "App2Main.h"
 #include "Common\DirectXHelper.h"
 
-using namespace Graphics2Project;
+#include <Windows.h>
+
+using namespace App2;
 using namespace Windows::Foundation;
 using namespace Windows::System::Threading;
 using namespace Concurrency;
 
 // Loads and initializes application assets when the application is loaded.
-Graphics2ProjectMain::Graphics2ProjectMain(const std::shared_ptr<DX::DeviceResources>& deviceResources) :
+App2Main::App2Main(const std::shared_ptr<DX::DeviceResources>& deviceResources) :
 	m_deviceResources(deviceResources)
 {
 	// Register to be notified if the Device is lost or recreated
@@ -27,22 +29,31 @@ Graphics2ProjectMain::Graphics2ProjectMain(const std::shared_ptr<DX::DeviceResou
 	*/
 }
 
-Graphics2ProjectMain::~Graphics2ProjectMain()
+App2Main::~App2Main()
 {
 	// Deregister device notification
 	m_deviceResources->RegisterDeviceNotify(nullptr);
 }
 
 // Updates application state when the window size changes (e.g. device orientation change)
-void Graphics2ProjectMain::CreateWindowSizeDependentResources() 
+void App2Main::CreateWindowSizeDependentResources() 
 {
 	// TODO: Replace this with the size-dependent initialization of your app's content.
 	m_sceneRenderer->CreateWindowSizeDependentResources();
 }
 
+using namespace Windows::UI::Core;
+extern CoreWindow^ gwindow;
 // Updates the application state once per frame.
-void Graphics2ProjectMain::Update() 
+void App2Main::Update() 
 {
+	if (Windows::UI::Core::CoreVirtualKeyStates::Down == gwindow->GetAsyncKeyState(Windows::System::VirtualKey::Space))
+	{
+		Windows::UI::Input::PointerPoint^ point = Windows::UI::Input::PointerPoint::GetCurrentPoint(1);
+		float X = point->Position.X;
+		float Y = point->Position.Y;
+	}
+
 	// Update scene objects.
 	m_timer.Tick([&]()
 	{
@@ -54,7 +65,7 @@ void Graphics2ProjectMain::Update()
 
 // Renders the current frame according to the current application state.
 // Returns true if the frame was rendered and is ready to be displayed.
-bool Graphics2ProjectMain::Render() 
+bool App2Main::Render() 
 {
 	// Don't try to render anything before the first Update.
 	if (m_timer.GetFrameCount() == 0)
@@ -84,18 +95,29 @@ bool Graphics2ProjectMain::Render()
 	return true;
 }
 
+void App2::App2Main::OnPointerPressed(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::PointerEventArgs ^ args)
+{
+}
+
+void App2::App2Main::OnPointerReleased(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::PointerEventArgs ^ args)
+{
+}
+
+void App2::App2Main::OnPointerMoved(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::PointerEventArgs ^ args)
+{
+}
+
 // Notifies renderers that device resources need to be released.
-void Graphics2ProjectMain::OnDeviceLost()
+void App2Main::OnDeviceLost()
 {
 	m_sceneRenderer->ReleaseDeviceDependentResources();
 	m_fpsTextRenderer->ReleaseDeviceDependentResources();
 }
 
 // Notifies renderers that device resources may now be recreated.
-void Graphics2ProjectMain::OnDeviceRestored()
+void App2Main::OnDeviceRestored()
 {
 	m_sceneRenderer->CreateDeviceDependentResources();
-	
 	m_fpsTextRenderer->CreateDeviceDependentResources();
 	CreateWindowSizeDependentResources();
 }

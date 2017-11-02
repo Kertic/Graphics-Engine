@@ -4,9 +4,10 @@
 #include "ShaderStructures.h"
 #include "..\Common\StepTimer.h"
 
-#include "defines.h"
+#include <DirectXMath.h>
+using namespace DirectX;
 
-namespace Graphics2Project
+namespace App2
 {
 	// This sample renderer instantiates a basic rendering pipeline.
 	class Sample3DSceneRenderer
@@ -59,7 +60,7 @@ namespace Graphics2Project
 		ModelViewProjectionConstantBuffer	m_CubeConstantBufferData;
 		uint32	m_CubeIndexCount;
 
-		 ModelViewProjectionConstantBuffer	m_PyramidconstantBufferData;
+		ModelViewProjectionConstantBuffer	m_PyramidconstantBufferData;
 		uint32	m_PyramidindexCount;
 
 		ModelViewProjectionConstantBuffer	m_CustomMeshConstantBufferData;
@@ -69,6 +70,8 @@ namespace Graphics2Project
 		bool	m_loadingComplete;
 		float	m_degreesPerSecond;
 		bool	m_tracking;
+
+		XMFLOAT4X4 world, camera, proj;
 	};
 }
 

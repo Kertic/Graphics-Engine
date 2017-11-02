@@ -2,17 +2,12 @@
 #include "Sample3DSceneRenderer.h"
 #include "Mesh.h"
 
-
 #include "..\Common\DirectXHelper.h"
 
-using namespace Graphics2Project;
+using namespace App2;
 
 using namespace DirectX;
 using namespace Windows::Foundation;
-
-
-
-
 
 // Loads vertex and pixel shaders from files and instantiates the cube geometry.
 Sample3DSceneRenderer::Sample3DSceneRenderer(const std::shared_ptr<DX::DeviceResources>& deviceResources) :
@@ -24,6 +19,10 @@ Sample3DSceneRenderer::Sample3DSceneRenderer(const std::shared_ptr<DX::DeviceRes
 {
 	CreateDeviceDependentResources();
 	CreateWindowSizeDependentResources();
+
+	//XMStoreFloat4x4(&view, XMMatrixIdentity());
+
+
 }
 
 // Initializes view parameters when the window size changes.
@@ -31,7 +30,7 @@ void Sample3DSceneRenderer::CreateWindowSizeDependentResources()
 {
 	Size outputSize = m_deviceResources->GetOutputSize();
 	float aspectRatio = outputSize.Width / outputSize.Height;
-	float fovAngleY = 70.0f * XM_PI / 180.0f;
+	float fovAngleY = 60.0f * XM_PI / 180.0f;
 
 	// This is a simple example of change that can be made when the app is in
 	// portrait or snapped view.
@@ -52,16 +51,17 @@ void Sample3DSceneRenderer::CreateWindowSizeDependentResources()
 		aspectRatio,
 		0.01f,
 		100.0f
-	);
+		);
 
 	XMFLOAT4X4 orientation = m_deviceResources->GetOrientationTransform3D();
 
 	XMMATRIX orientationMatrix = XMLoadFloat4x4(&orientation);
+	
 	//Cube
 	XMStoreFloat4x4(
 		&m_CubeConstantBufferData.projection,
 		XMMatrixTranspose(perspectiveMatrix * orientationMatrix)
-	);
+		);
 
 	//Pyramid
 
@@ -75,20 +75,32 @@ void Sample3DSceneRenderer::CreateWindowSizeDependentResources()
 		&m_CustomMeshConstantBufferData.projection,
 		XMMatrixTranspose(perspectiveMatrix * orientationMatrix)
 	);
+
 	// Eye is at (0,0.7,1.5), looking at point (0,-0.1,0) with the up-vector along the y-axis.
-	static const XMVECTORF32 eye = { 0.0f, 0.7f, 1.5f, 0.0f };
-	static const XMVECTORF32 at = { 0.0f, -0.1f, 0.0f, 0.0f };
+	static const XMVECTORF32 eye = { 0.0f, 0.0f, -1.5f, 0.0f };
+	static const XMVECTORF32 at = { 0.0f, 0.0f, 0.0f, 0.0f };
 	static const XMVECTORF32 up = { 0.0f, 1.0f, 0.0f, 0.0f };
-
-	XMStoreFloat4x4(&m_CubeConstantBufferData.view, XMMatrixTranspose(XMMatrixLookAtRH(eye, at, up)));
-
-	XMStoreFloat4x4(&m_CustomMeshConstantBufferData.view, XMMatrixTranspose(XMMatrixLookAtRH(eye, at, up)));
-
-
-	XMStoreFloat4x4(&m_PyramidconstantBufferData.view, XMMatrixTranspose(XMMatrixLookAtRH(eye, at, up)));
+	XMStoreFloat4x4(&camera, XMMatrixLookAtRH(eye, at, up));
+	XMStoreFloat4x4(&m_CubeConstantBufferData.view, XMMatrixTranspose(XMMatrixInverse(0, XMMatrixLookAtRH(eye, at, up))));
+	XMStoreFloat4x4(&m_CustomMeshConstantBufferData.view, XMMatrixTranspose(XMMatrixInverse(0, XMMatrixLookAtRH(eye, at, up))));
+	XMStoreFloat4x4(&m_PyramidconstantBufferData.view, XMMatrixTranspose(XMMatrixInverse(0, XMMatrixLookAtRH(eye, at, up))));
 
 
 }
+
+using namespace Windows::UI::Core;
+extern CoreWindow^ gwindow;
+#include <atomic>
+extern bool mouse_move;
+extern float diffx;
+extern float diffy;
+extern bool w_down;
+extern bool a_down;
+extern bool s_down;
+extern bool d_down;
+extern bool left_click;
+
+extern char buttons[256];
 
 // Called once per frame, rotates the cube and calculates the model and view matrices.
 void Sample3DSceneRenderer::Update(DX::StepTimer const& timer)
@@ -101,10 +113,55 @@ void Sample3DSceneRenderer::Update(DX::StepTimer const& timer)
 		float radians = static_cast<float>(fmod(totalRotation, XM_2PI));
 
 		Rotate(radians);
-
-
-
 	}
+
+	XMMATRIX newcamera = XMLoadFloat4x4(&camera);
+
+	if (buttons['W'])
+	{
+		newcamera.r[3] = newcamera.r[3] + newcamera.r[2] * -timer.GetElapsedSeconds() * 5.0;
+	}
+
+	if (a_down)
+	{
+		newcamera.r[3] = newcamera.r[3] + newcamera.r[0] * -timer.GetElapsedSeconds() *5.0;
+	}
+
+	if (s_down)
+	{
+		newcamera.r[3] = newcamera.r[3] + newcamera.r[2] * timer.GetElapsedSeconds() * 5.0;
+	}
+
+	if (d_down)
+	{
+		newcamera.r[3] = newcamera.r[3] + newcamera.r[0] * timer.GetElapsedSeconds() * 5.0;
+	}
+
+	Windows::UI::Input::PointerPoint^ point = nullptr;
+	
+	//if(mouse_move)/*This crashes unless a mouse event actually happened*/
+		//point = Windows::UI::Input::PointerPoint::GetCurrentPoint(pointerID);
+
+	if (mouse_move)
+	{
+		// Updates the application state once per frame.
+		if (left_click)
+		{
+			XMVECTOR pos = newcamera.r[3];
+			newcamera.r[3] = XMLoadFloat4(&XMFLOAT4(0, 0, 0, 1));
+			newcamera = XMMatrixRotationX(-diffy*0.01f) * newcamera * XMMatrixRotationY(-diffx*0.01f);
+			newcamera.r[3] = pos;
+		}
+	}
+
+	XMStoreFloat4x4(&camera, newcamera);
+
+	/*Be sure to inverse the camera & Transpose because they don't use pragma pack row major in shaders*/
+	XMStoreFloat4x4(&m_CubeConstantBufferData.view, XMMatrixTranspose(XMMatrixInverse(0, newcamera)));
+	XMStoreFloat4x4(&m_PyramidconstantBufferData.view, XMMatrixTranspose(XMMatrixInverse(0, newcamera)));
+	XMStoreFloat4x4(&m_CustomMeshConstantBufferData.view, XMMatrixTranspose(XMMatrixInverse(0, newcamera)));
+
+	mouse_move = false;/*Reset*/
 }
 
 // Rotate the 3D cube model a set amount of radians.
@@ -116,22 +173,19 @@ void Sample3DSceneRenderer::Rotate(float radians)
 #pragma region Independant Pyramid Transformations
 	XMStoreFloat4x4(&m_PyramidconstantBufferData.model[0], XMMatrixTranspose(XMMatrixRotationY(-radians)));
 	//XMStoreFloat4x4(&m_PyramidconstantBufferData.model[1], XMMatrixTranspose(XMMatrixRotationY(radians)));
-	
+
 	XMStoreFloat4x4(
 		&m_PyramidconstantBufferData.model[1],
-			XMMatrixMultiply(
-				XMMatrixTranspose(XMMatrixTranslation(1.0f, 0.0f, 0.0f)),
-				XMMatrixTranspose(XMMatrixRotationY(radians))
-			)
+		XMMatrixMultiply(
+			XMMatrixTranspose(XMMatrixTranslation(1.0f, 0.0f, 0.0f)),
+			XMMatrixTranspose(XMMatrixRotationY(radians))
+		)
 	);
 
 	XMStoreFloat4x4(&m_PyramidconstantBufferData.model[2], XMMatrixTranspose(XMMatrixTranslation(-1.25f, 0.0f, 0.0f)));
 	XMStoreFloat4x4(&m_PyramidconstantBufferData.model[3], XMMatrixTranspose(XMMatrixTranslation(-1.25f, -1.25f, 0.0f)));
 	XMStoreFloat4x4(&m_PyramidconstantBufferData.model[4], XMMatrixTranspose(XMMatrixTranslation(-1.25f, -1.25f, -1.25f)));
 #pragma endregion
-
-
-
 }
 
 void Sample3DSceneRenderer::StartTracking()
@@ -368,9 +422,6 @@ void Sample3DSceneRenderer::Render()
 
 void Sample3DSceneRenderer::CreateDeviceDependentResources()
 {
-
-
-
 	// Load shaders asynchronously.
 	auto loadVSTask = DX::ReadDataAsync(L"InstancedVertexShader.cso");
 	auto loadPSTask = DX::ReadDataAsync(L"SamplePixelShader.cso");
@@ -378,7 +429,8 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 	// After the vertex shader file is loaded, create the shader and input layout.
 	auto createVSTask = loadVSTask.then([this](const std::vector<byte>& fileData) {
 
-		static const D3D11_INPUT_ELEMENT_DESC vertexDesc[] =
+
+		static const D3D11_INPUT_ELEMENT_DESC vertexDesc [] =
 		{
 			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 			{ "COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
@@ -455,15 +507,13 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 			)
 		);
 #pragma endregion
-
-
-
-
 	});
 
 	// After the pixel shader file is loaded, create the shader and constant buffer.
 	auto createPSTask = loadPSTask.then([this](const std::vector<byte>& fileData) {
-		CD3D11_BUFFER_DESC constantBufferDesc(sizeof(ModelViewProjectionConstantBuffer), D3D11_BIND_CONSTANT_BUFFER);
+
+
+		CD3D11_BUFFER_DESC constantBufferDesc(sizeof(ModelViewProjectionConstantBuffer) , D3D11_BIND_CONSTANT_BUFFER);
 #pragma region Cube
 		DX::ThrowIfFailed(
 			m_deviceResources->GetD3DDevice()->CreatePixelShader(
@@ -522,15 +572,10 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 			)
 		);
 #pragma endregion
-
-
-
-
 	});
 
 	// Once both shaders are loaded, create the mesh.
-	auto createCubeTask = (createPSTask && createVSTask).then([this]() {
-
+	auto createCubeTask = (createPSTask && createVSTask).then([this] () {
 #pragma region Create cube verts
 
 
@@ -538,14 +583,14 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 		// Load mesh vertices. Each vertex has a position and a color.
 		static const VertexPositionColor cubeVertices[] =
 		{
-			{XMFLOAT3(-0.5f, -0.5f, -0.5f), XMFLOAT3(0.0f, 0.0f, 0.0f)},
-			{XMFLOAT3(-0.5f, -0.5f,  0.5f), XMFLOAT3(0.0f, 0.0f, 1.0f)},
-			{XMFLOAT3(-0.5f,  0.5f, -0.5f), XMFLOAT3(0.0f, 1.0f, 0.0f)},
-			{XMFLOAT3(-0.5f,  0.5f,  0.5f), XMFLOAT3(0.0f, 1.0f, 1.0f)},
-			{XMFLOAT3(0.5f, -0.5f, -0.5f), XMFLOAT3(1.0f, 0.0f, 0.0f)},
-			{XMFLOAT3(0.5f, -0.5f,  0.5f), XMFLOAT3(1.0f, 0.0f, 1.0f)},
-			{XMFLOAT3(0.5f,  0.5f, -0.5f), XMFLOAT3(1.0f, 1.0f, 0.0f)},
-			{XMFLOAT3(0.5f,  0.5f,  0.5f), XMFLOAT3(1.0f, 1.0f, 1.0f)},
+			{ XMFLOAT3(-0.5f, -0.5f, -0.5f), XMFLOAT3(0.0f, 0.0f, 0.0f) },
+			{ XMFLOAT3(-0.5f, -0.5f,  0.5f), XMFLOAT3(0.0f, 0.0f, 1.0f) },
+			{ XMFLOAT3(-0.5f,  0.5f, -0.5f), XMFLOAT3(0.0f, 1.0f, 0.0f) },
+			{ XMFLOAT3(-0.5f,  0.5f,  0.5f), XMFLOAT3(0.0f, 1.0f, 1.0f) },
+			{ XMFLOAT3(0.5f, -0.5f, -0.5f), XMFLOAT3(1.0f, 0.0f, 0.0f) },
+			{ XMFLOAT3(0.5f, -0.5f,  0.5f), XMFLOAT3(1.0f, 0.0f, 1.0f) },
+			{ XMFLOAT3(0.5f,  0.5f, -0.5f), XMFLOAT3(1.0f, 1.0f, 0.0f) },
+			{ XMFLOAT3(0.5f,  0.5f,  0.5f), XMFLOAT3(1.0f, 1.0f, 1.0f) },
 		};
 
 
@@ -680,16 +725,12 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 
 
 		CreateCustomMesh();
-
 	});
 
 	// Once the cube is loaded, the object is ready to be rendered.
-	createCubeTask.then([this]() {
+	createCubeTask.then([this] () {
 		m_loadingComplete = true;
 	});
-
-
-
 }
 
 void Sample3DSceneRenderer::CreateCustomMesh()
@@ -703,14 +744,14 @@ void Sample3DSceneRenderer::CreateCustomMesh()
 	{
 		MeshVerts.push_back({ XMFLOAT3(testMesh.UniqueVertexArray[i].m_position),
 			XMFLOAT3(
-				(float)i / (float)testMesh.UniqueVertexArray.size(),
+			(float)i / (float)testMesh.UniqueVertexArray.size(),
 				(float)i / (float)testMesh.UniqueVertexArray.size(),
 				(float)i / (float)testMesh.UniqueVertexArray.size()) });
 
 #ifdef _TRANSLATEMODELS
 		MeshVerts[MeshVerts.size() - 1].pos.x += 0.5f;
 #endif
-		}
+	}
 	MeshVerts.shrink_to_fit();
 	for (unsigned int i = 0; i < testMesh.TrianglePointIndexes.size(); i++)
 	{
@@ -748,20 +789,17 @@ void Sample3DSceneRenderer::CreateCustomMesh()
 		)
 	);
 #pragma endregion
-	}
-
+}
 
 void Sample3DSceneRenderer::ReleaseDeviceDependentResources()
 {
 	m_loadingComplete = false;
-
 	m_CubeVertexShader.Reset();
 	m_CubeInputLayout.Reset();
 	m_CubePixelShader.Reset();
 	m_CubeConstantBuffer.Reset();
 	m_CubeVertexBuffer.Reset();
 	m_CubeIndexBuffer.Reset();
-
 
 	m_PyramidinputLayout.Reset();
 	m_PyramidvertexBuffer.Reset();

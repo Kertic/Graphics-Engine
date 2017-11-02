@@ -2,14 +2,14 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Common">
-      <UniqueIdentifier>5370d079-b2e0-4e67-b6c3-2e1f891b83b2</UniqueIdentifier>
+      <UniqueIdentifier>eea4b6f6-9d24-4ae5-8b37-9a4274d8c360</UniqueIdentifier>
     </Filter>
     <Filter Include="Assets">
-      <UniqueIdentifier>131bf47c-2f54-404d-abdc-95693933ad35</UniqueIdentifier>
+      <UniqueIdentifier>29d2655e-e508-4169-bc23-5c4b6e79fca2</UniqueIdentifier>
       <Extensions>bmp;fbx;gif;jpg;jpeg;tga;tiff;tif;png</Extensions>
     </Filter>
     <Filter Include="Content">
-      <UniqueIdentifier>da7d588c-796b-4011-af96-f35737760087</UniqueIdentifier>
+      <UniqueIdentifier>2aef7db2-a874-4819-a8cc-13a761292561</UniqueIdentifier>
     </Filter>
     <ClInclude Include="Common\DirectXHelper.h">
       <Filter>Common</Filter>
@@ -65,15 +65,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="App.cpp" />
-    <ClCompile Include="Graphics2ProjectMain.cpp" />
+    <ClCompile Include="App2Main.cpp" />
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="Mesh.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.h" />
-    <ClInclude Include="Graphics2ProjectMain.h" />
+    <ClInclude Include="App2Main.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="defines.h" />
     <ClInclude Include="Mesh.h" />
   </ItemGroup>
   <ItemGroup>
@@ -85,14 +84,16 @@
     <AppxManifest Include="Package.appxmanifest" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Graphics2Project_TemporaryKey.pfx" />
-    <None Include="Assets\test pyramid.obj">
-      <Filter>Assets</Filter>
-    </None>
+    <None Include="App2_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Content\InstancedVertexShader.hlsl">
       <Filter>Content</Filter>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Object Include="Assets\test pyramid.obj">
+      <Filter>Assets</Filter>
+    </Object>
   </ItemGroup>
 </Project>

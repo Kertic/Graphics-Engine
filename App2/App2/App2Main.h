@@ -6,16 +6,20 @@
 #include "Content\SampleFpsTextRenderer.h"
 
 // Renders Direct2D and 3D content on the screen.
-namespace Graphics2Project
+namespace App2
 {
-	class Graphics2ProjectMain : public DX::IDeviceNotify
+	class App2Main : public DX::IDeviceNotify
 	{
 	public:
-		Graphics2ProjectMain(const std::shared_ptr<DX::DeviceResources>& deviceResources);
-		~Graphics2ProjectMain();
+		App2Main(const std::shared_ptr<DX::DeviceResources>& deviceResources);
+		~App2Main();
 		void CreateWindowSizeDependentResources();
 		void Update();
 		bool Render();
+
+		void OnPointerPressed(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args);
+		void OnPointerReleased(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args);
+		void OnPointerMoved(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args);
 
 		// IDeviceNotify
 		virtual void OnDeviceLost();

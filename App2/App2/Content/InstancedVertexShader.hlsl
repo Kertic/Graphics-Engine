@@ -28,6 +28,7 @@ struct VertexShaderInput
 struct PixelShaderInput
 {
 	float4 pos : SV_POSITION;
+	float3 worldPos : POSITION3;
 	float3 color : COLOR0;
 	float3 normWorld : NORMAL;
 	float3 normView : NORMAL2;
@@ -48,6 +49,7 @@ PixelShaderInput main(VertexShaderInput input, uint instanceID : SV_InstanceID)
 	
 	// Transform the vertex position into projected space.
 	pos = mul(pos, model[instanceID]);
+	output.worldPos = pos;
 	pos = mul(pos, view);
 	pos = mul(pos, projection);
 	output.pos = pos;
@@ -59,13 +61,21 @@ PixelShaderInput main(VertexShaderInput input, uint instanceID : SV_InstanceID)
 	//Bring normals through spaces
 	nor = normalize(nor);
 	nor  = mul(nor, model[instanceID]);
+
+
 	
 
 	output.normWorld = nor;
 	float3 nor2 = mul(nor, view);
 	output.normView = nor2;
-	output.Lightnorm = normalize(Lightnorm);
+	float3 lightnorm = float3(Lightnorm.xyz);
+	output.Lightnorm = normalize(lightnorm);
 	output.Lightcolor = Lightcolor;
+
+	//Bring the light's position through spaces
+	//output.Lightpos = mul(Lightpos, model[instanceID]);
+	//output.Lightpos = mul(output.Lightpos, view);
+	//output.Lightpos = mul(output.Lightpos, projection);
 	output.Lightpos = Lightpos;
 	output.Lighttype = Lighttype;
 	

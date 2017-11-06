@@ -32,13 +32,13 @@ Sample3DSceneRenderer::Sample3DSceneRenderer(const std::shared_ptr<DX::DeviceRes
 	PointLight = {
 		XMFLOAT4(0.0f, -0.5f, 0.5f, 1.0f),
 		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
-		XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f),
+		XMFLOAT4(0.0f, -1.0f, 0.0f, 1.0f),
 		XMFLOAT4((float)CurrentLightingOptions::POINT_LIGHTING, 0.0f, 0.0f, 0.0f) };
 
 	SpotLight = {
-		XMFLOAT4(0.0f, -0.5f, 0.5f, 1.0f),
+		XMFLOAT4(0.0f, -0.5f, 0.0f, 1.0f),
 		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
-		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
+		XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f),
 		XMFLOAT4((float)CurrentLightingOptions::SPOT_LIGHTING, 0.0f, 0.0f, 0.0f) };
 
 

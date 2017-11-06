@@ -2,6 +2,7 @@
 struct PixelShaderInput
 {
 	float4 pos : SV_POSITION;
+	float3 worldPos : POSITION3;
 	float3 color : COLOR0;
 	float3 normWorld : NORMAL;
 	float3 normView : NORMAL2;
@@ -17,28 +18,28 @@ struct PixelShaderInput
 float4 main(PixelShaderInput input) : SV_TARGET
 {
 	//This is directional Light
-	 if (input.Lighttype.x >= 0.0f && input.Lighttype.x < 1) {
+	 if (input.Lighttype.x >= 0.0f && input.Lighttype.x < 0.8f) {
 		 float lightRatio = saturate(dot(-input.Lightnorm, input.normWorld));
 		 input.color = lightRatio * input.Lightcolor * input.color;
 		}
 //point light
-if (input.Lighttype.x >= 1.0f && input.Lighttype.x < 2) {
-	float3 pos = float3(input.pos.xyz);
+if (input.Lighttype.x >= 0.8f && input.Lighttype.x < 1.8f) {
+	float3 pos = float3(input.worldPos.xyz);
 	float3 lightDir = normalize(input.Lightpos - pos);
 	float lightRatio = saturate(dot(lightDir, input.normWorld));
 	input.color = lightRatio * input.Lightcolor * input.color;
 }
 //Spot light
-if (input.Lighttype.x >= 2.0f && input.Lighttype.x < 3) {
+if (input.Lighttype.x >= 1.8f && input.Lighttype.x < 2.8f) {
 	float3 pos = float3(input.pos.xyz);
 	float3 lightDir = normalize(input.Lightpos - pos);
 	float spotfactor = 0.0f;
-	float lightRatio = saturate(dot(-lightDir, input.Lightnorm));
+	float surfaceRatio = saturate(dot(-lightDir, input.Lightnorm));
 	//0.5 is the cone ratio
-	if (lightRatio > 0.5) {
+	if (surfaceRatio > 0.5) {
 		spotfactor = 1.0f;
 	}
-
+	float lightRatio = saturate(dot(lightDir, input.normWorld));
 	input.color = lightRatio * spotfactor * input.color * input.Lightcolor;
 }
 	

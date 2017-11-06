@@ -74,6 +74,7 @@
     <ClInclude Include="App2Main.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Mesh.h" />
+    <ClInclude Include="defines.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Assets\StoreLogo.png">
@@ -85,15 +86,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App2_TemporaryKey.pfx" />
+    <None Include="Assets\test pyramid.obj" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Content\InstancedVertexShader.hlsl">
       <Filter>Content</Filter>
     </FxCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Object Include="Assets\test pyramid.obj">
-      <Filter>Assets</Filter>
-    </Object>
   </ItemGroup>
 </Project>

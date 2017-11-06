@@ -7,6 +7,11 @@ Mesh::Mesh()
 
 }
 
+Mesh::Mesh(std::string fileName)
+{
+	LoadMeshFromFile(fileName);
+}
+
 void Mesh::LoadMeshFromFile(std::string inFileName)
 {
 	std::string testString;

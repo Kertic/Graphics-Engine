@@ -30,6 +30,7 @@ public:
 	std::vector<PositionNormalUV> UniqueVertexArray;
 	std::vector<unsigned int> TrianglePointIndexes;
 	Mesh();
+	Mesh(std::string fileName);
 	void LoadMeshFromFile(std::string inFileName);
 };
 

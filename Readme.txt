@@ -1,0 +1,1 @@
+Not relevant now, but the first mile stone has a grey pyramid that's loaded from file.

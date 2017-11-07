@@ -25,6 +25,7 @@ namespace App2
 		void TrackingUpdate(float positionX);
 		void StopTracking();
 		bool IsTracking() { return m_tracking; }
+		void Sample3DSceneRenderer::UpdateCamera(DX::StepTimer const& timer, float const moveSpd, float const rotSpd);
 
 
 	private:
@@ -91,6 +92,10 @@ namespace App2
 		LightNormalColorPositionType PointLight;
 		LightNormalColorPositionType SpotLight;
 		float light_DynamicOffset;
+		//Camera vars
+		XMVECTOR m_eye = { 0.0f, 0.0f, -1.5f, 0.0f };
+		XMVECTOR m_at = { 0.0f, 1.0f, 0.0f, 0.0f };
+		XMVECTOR m_up = { 0.0f, 1.0f, 0.0f, 0.0f };
 	};
 }
 

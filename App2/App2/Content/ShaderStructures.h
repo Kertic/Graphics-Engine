@@ -8,6 +8,7 @@ namespace App2
 		DirectX::XMFLOAT4X4 model[5];
 		DirectX::XMFLOAT4X4 view;
 		DirectX::XMFLOAT4X4 projection;
+		DirectX::XMFLOAT4 cameraPosition;
 	};
 
 	// Used to send per-vertex data to the vertex shader.

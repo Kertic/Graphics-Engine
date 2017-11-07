@@ -20,16 +20,17 @@ struct PixelShaderInput
 // A pass-through function for the (interpolated) color data.
 float4 main(PixelShaderInput input) : SV_TARGET
 {
+	float lightRatio;
 	//This is directional Light
 	 if (input.Lighttype.x >= 0.0f && input.Lighttype.x < 0.8f) {
-		 float lightRatio = saturate(dot(-input.Lightnorm, input.normWorld));
+		  lightRatio = saturate(dot(-input.Lightnorm, input.normWorld));
 		 input.color = lightRatio * input.Lightcolor * input.color;
 		}
 //point light
 if (input.Lighttype.x >= 0.8f && input.Lighttype.x < 1.8f) {
 	float3 pos = float3(input.worldPos.xyz);
 	float3 lightDir = normalize(input.Lightpos - pos);
-	float lightRatio = saturate(dot(lightDir, input.normWorld));
+	 lightRatio = saturate(dot(lightDir, input.normWorld));
 	input.color = lightRatio * input.Lightcolor * input.color;
 }
 //Spot light
@@ -42,9 +43,10 @@ if (input.Lighttype.x >= 1.8f && input.Lighttype.x < 2.8f) {
 	if (surfaceRatio > 0.7) {
 		spotfactor = 1.0f;
 	}
-	float lightRatio = saturate(dot(lightDir, input.normWorld));
-	input.color = lightRatio * spotfactor * input.color * input.Lightcolor;
+	 lightRatio = saturate(dot(lightDir, input.normWorld)) * spotfactor;
+	input.color = lightRatio * input.color * input.Lightcolor;
 }
+
 float3 viewDir = normalize(float3(input.camPosition.xyz) - float3(input.worldPos.xyz));
 float3 halfVector = normalize((-input.Lightnorm) - viewDir);
 float intensity = 0.0f;
@@ -52,7 +54,8 @@ float testValue = pow(saturate(dot(input.normView, halfVector)), input.Speculari
 if (testValue > intensity) {
 	intensity = testValue;
 }
-float3 reflectedLight = input.Lightcolor * intensity;
+
+float3 reflectedLight = input.Lightcolor * intensity * lightRatio;
 
 
 

@@ -5,6 +5,7 @@ cbuffer ModelViewProjectionConstantBuffer : register(b0)
 	matrix model[5];
 	matrix view;
 	matrix projection;
+	float4 cameraPos;
 };
 cbuffer VertexShaderLightInput : register(b1) {
 	float4 Lightnorm;
@@ -49,7 +50,8 @@ PixelShaderInput main(VertexShaderInput input, uint instanceID : SV_InstanceID)
 	PixelShaderInput output;
 	float4 pos = float4(input.pos, 1.0f);
 	float4 nor = float4(input.norm, 0.0f);
-	output.camPosition = float4(view[3][0], view[3][1], view[3][2], view[3][3]);
+	
+	output.camPosition = cameraPos;
 
 	// Transform the vertex position into projected space.
 	pos = mul(pos, model[instanceID]);
@@ -82,7 +84,7 @@ PixelShaderInput main(VertexShaderInput input, uint instanceID : SV_InstanceID)
 	//output.Lightpos = mul(output.Lightpos, projection);
 	output.Lightpos = Lightpos;
 	output.Lighttype = Lighttype;
-	output.Specularity = 128;
+	output.Specularity = 10;
 
 	if (instanceID == 2) {
 		output.Specularity = 10;

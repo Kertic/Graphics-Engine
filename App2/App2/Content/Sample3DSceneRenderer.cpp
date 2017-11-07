@@ -17,7 +17,7 @@ Sample3DSceneRenderer::Sample3DSceneRenderer(const std::shared_ptr<DX::DeviceRes
 	m_tracking(false),
 	m_deviceResources(deviceResources)
 {
-	currentLight = POINT_LIGHTING;
+	currentLight = DIRECTIONAL_LIGHTING;
 	CreateDeviceDependentResources();
 	CreateWindowSizeDependentResources();
 
@@ -96,13 +96,23 @@ void Sample3DSceneRenderer::CreateWindowSizeDependentResources()
 	);
 
 	// Eye is at (0,0.7,1.5), looking at point (0,-0.1,0) with the up-vector along the y-axis.
-	static const XMVECTORF32 eye = { 0.0f, 0.0f, -1.5f, 0.0f };
-	static const XMVECTORF32 at = { 0.0f, 0.0f, 0.0f, 0.0f };
-	static const XMVECTORF32 up = { 0.0f, 1.0f, 0.0f, 0.0f };
-	XMStoreFloat4x4(&camera, XMMatrixLookAtRH(eye, at, up));
-	XMStoreFloat4x4(&m_PlaneConstantBufferData.view, XMMatrixTranspose(XMMatrixInverse(0, XMMatrixLookAtRH(eye, at, up))));
-	XMStoreFloat4x4(&m_CustomMeshConstantBufferData.view, XMMatrixTranspose(XMMatrixInverse(0, XMMatrixLookAtRH(eye, at, up))));
-	XMStoreFloat4x4(&m_PyramidconstantBufferData.view, XMMatrixTranspose(XMMatrixInverse(0, XMMatrixLookAtRH(eye, at, up))));
+	static const XMVECTOR eye = { 0.0f, 0.0f, -1.5f, 0.0f };
+	static const XMVECTOR at = { 0.0f, 1.0f, 0.0f, 0.0f };
+	static const XMVECTOR up = { 0.0f, 1.0f, 0.0f, 0.0f };
+	m_eye = eye;
+	m_at = at;
+	m_up = up;
+	XMStoreFloat4x4(&camera, XMMatrixLookAtLH(eye, at, up));
+	XMStoreFloat4x4(&m_PlaneConstantBufferData.view, XMMatrixTranspose(XMMatrixInverse(0, XMMatrixLookAtLH(eye, at, up))));
+	XMStoreFloat4x4(&m_CustomMeshConstantBufferData.view, XMMatrixTranspose(XMMatrixInverse(0, XMMatrixLookAtLH(eye, at, up))));
+	XMStoreFloat4x4(&m_PyramidconstantBufferData.view, XMMatrixTranspose(XMMatrixInverse(0, XMMatrixLookAtLH(eye, at, up))));
+
+
+	XMMATRIX newcamera = XMLoadFloat4x4(&camera);
+	XMVECTOR pos = newcamera.r[3];
+	XMStoreFloat4(&m_PlaneConstantBufferData.cameraPosition, pos);
+	XMStoreFloat4(&m_PyramidconstantBufferData.cameraPosition, pos);
+	XMStoreFloat4(&m_CustomMeshConstantBufferData.cameraPosition, pos);
 
 
 }
@@ -134,27 +144,7 @@ void Sample3DSceneRenderer::Update(DX::StepTimer const& timer)
 		Rotate(radians);
 	}
 
-	XMMATRIX newcamera = XMLoadFloat4x4(&camera);
 
-	if (buttons['W'])
-	{
-		newcamera.r[3] = newcamera.r[3] + newcamera.r[2] * -timer.GetElapsedSeconds() * 5.0;
-	}
-
-	if (a_down)
-	{
-		newcamera.r[3] = newcamera.r[3] + newcamera.r[0] * -timer.GetElapsedSeconds() *5.0;
-	}
-
-	if (s_down)
-	{
-		newcamera.r[3] = newcamera.r[3] + newcamera.r[2] * timer.GetElapsedSeconds() * 5.0;
-	}
-
-	if (d_down)
-	{
-		newcamera.r[3] = newcamera.r[3] + newcamera.r[0] * timer.GetElapsedSeconds() * 5.0;
-	}
 
 	if (buttons['1']) {
 		currentLight = DIRECTIONAL_LIGHTING;
@@ -180,17 +170,7 @@ void Sample3DSceneRenderer::Update(DX::StepTimer const& timer)
 	//if(mouse_move)/*This crashes unless a mouse event actually happened*/
 		//point = Windows::UI::Input::PointerPoint::GetCurrentPoint(pointerID);
 
-	if (mouse_move)
-	{
-		// Updates the application state once per frame.
-		if (left_click)
-		{
-			XMVECTOR pos = newcamera.r[3];
-			newcamera.r[3] = XMLoadFloat4(&XMFLOAT4(0, 0, 0, 1));
-			newcamera = XMMatrixRotationX(-diffy*0.01f) * newcamera * XMMatrixRotationY(-diffx*0.01f);
-			newcamera.r[3] = pos;
-		}
-	}
+
 
 #pragma region Update Lights
 	DirectionalLight = {
@@ -213,14 +193,112 @@ void Sample3DSceneRenderer::Update(DX::StepTimer const& timer)
 #pragma endregion
 
 
-	XMStoreFloat4x4(&camera, newcamera);
+	UpdateCamera(timer, 5.0f, 0.75f);
+	XMMATRIX newcamera = XMLoadFloat4x4(&camera);
+
 
 	/*Be sure to inverse the camera & Transpose because they don't use pragma pack row major in shaders*/
 	XMStoreFloat4x4(&m_PlaneConstantBufferData.view, XMMatrixTranspose(XMMatrixInverse(0, newcamera)));
 	XMStoreFloat4x4(&m_PyramidconstantBufferData.view, XMMatrixTranspose(XMMatrixInverse(0, newcamera)));
 	XMStoreFloat4x4(&m_CustomMeshConstantBufferData.view, XMMatrixTranspose(XMMatrixInverse(0, newcamera)));
 
+
+
+	XMVECTOR pos;// = newcamera.r[3];
+	XMVECTOR rot;
+	XMVECTOR scale;
+	XMMatrixDecompose(&scale, &rot, &pos, XMMatrixInverse(0, newcamera));
+
+	
+	XMStoreFloat4(&m_PlaneConstantBufferData.cameraPosition, pos);
+	XMStoreFloat4(&m_PyramidconstantBufferData.cameraPosition, pos);
+	XMStoreFloat4(&m_CustomMeshConstantBufferData.cameraPosition, pos);
+
 	mouse_move = false;/*Reset*/
+}
+void Sample3DSceneRenderer::UpdateCamera(DX::StepTimer const& timer, float const moveSpd, float const rotSpd)
+{
+	const float delta_time = (float)timer.GetElapsedSeconds();
+
+	if (buttons['W'])
+	{
+		XMMATRIX translation = XMMatrixTranslation(0.0f, 0.0f, -moveSpd * delta_time);
+		
+		
+		XMMATRIX temp_camera = XMLoadFloat4x4(&camera);
+		XMMATRIX result = XMMatrixMultiply(translation, temp_camera);
+		XMStoreFloat4x4(&camera, result);
+	}
+	if (buttons['S'])
+	{
+		XMMATRIX translation = XMMatrixTranslation(0.0f, 0.0f, moveSpd * delta_time);
+	
+		XMMATRIX temp_camera = XMLoadFloat4x4(&camera);
+		XMMATRIX result = XMMatrixMultiply(translation, temp_camera);
+		XMStoreFloat4x4(&camera, result);
+	}
+	if (buttons['A'])
+	{
+		XMMATRIX translation = XMMatrixTranslation(-moveSpd * delta_time, 0.0f, 0.0f);
+		
+		XMMATRIX temp_camera = XMLoadFloat4x4(&camera);
+		XMMATRIX result = XMMatrixMultiply(translation, temp_camera);
+		XMStoreFloat4x4(&camera, result);
+	}
+	if (buttons['D'])
+	{
+		XMMATRIX translation = XMMatrixTranslation(moveSpd * delta_time, 0.0f, 0.0f);
+		
+		XMMATRIX temp_camera = XMLoadFloat4x4(&camera);
+		XMMATRIX result = XMMatrixMultiply(translation, temp_camera);
+		XMStoreFloat4x4(&camera, result);
+	}
+	if (buttons['X'])
+	{
+		XMMATRIX translation = XMMatrixTranslation(0.0f, -moveSpd * delta_time, 0.0f);
+	
+		XMMATRIX temp_camera = XMLoadFloat4x4(&camera);
+		XMMATRIX result = XMMatrixMultiply(translation, temp_camera);
+		XMStoreFloat4x4(&camera, result);
+	}
+	if (buttons[VK_SPACE])
+	{
+		XMMATRIX translation = XMMatrixTranslation(0.0f, moveSpd * delta_time, 0.0f);
+		
+		XMMATRIX temp_camera = XMLoadFloat4x4(&camera);
+		XMMATRIX result = XMMatrixMultiply(translation, temp_camera);
+		XMStoreFloat4x4(&camera, result);
+	}
+
+	if (mouse_move)
+	{
+		if (left_click)
+		{
+			float dx = -diffx;
+			float dy = -diffy;
+			XMFLOAT4 pos = XMFLOAT4(camera._41, camera._42, camera._43, camera._44);
+
+			camera._41 = 0;
+			camera._42 = 0;
+			camera._43 = 0;
+
+			XMMATRIX rotX = XMMatrixRotationX(dy * rotSpd * delta_time);
+			XMMATRIX rotY = XMMatrixRotationY(dx * rotSpd * delta_time);
+
+			XMMATRIX temp_camera = XMLoadFloat4x4(&camera);
+			temp_camera = XMMatrixMultiply(rotX, temp_camera);
+			temp_camera = XMMatrixMultiply(temp_camera, rotY);
+
+			XMStoreFloat4x4(&camera, temp_camera);
+
+			camera._41 = pos.x;
+			camera._42 = pos.y;
+			camera._43 = pos.z;
+		}
+
+	}
+
+
 }
 
 // Rotate the 3D cube model a set amount of radians.
@@ -497,10 +575,10 @@ void Sample3DSceneRenderer::Render()
 	if (currentLight == DIRECTIONAL_LIGHTING) {
 		context->UpdateSubresource(LightConstantBuffer.Get(), 0, NULL, &DirectionalLight, 0, 0);
 	}
-	 if (currentLight == POINT_LIGHTING) {
+	if (currentLight == POINT_LIGHTING) {
 		context->UpdateSubresource(LightConstantBuffer.Get(), 0, NULL, &PointLight, 0, 0);
 	}
-	 if (currentLight == SPOT_LIGHTING) {
+	if (currentLight == SPOT_LIGHTING) {
 		context->UpdateSubresource(LightConstantBuffer.Get(), 0, NULL, &SpotLight, 0, 0);
 	}
 
@@ -838,7 +916,7 @@ void Sample3DSceneRenderer::CreateCustomMesh()
 #ifdef _TRANSLATEMODELS
 		MeshVerts[MeshVerts.size() - 1].pos.x += 0.5f;
 #endif
-}
+		}
 	MeshVerts.shrink_to_fit();
 	for (unsigned int i = 0; i < testMesh.TrianglePointIndexes.size(); i++)
 	{
@@ -876,7 +954,7 @@ void Sample3DSceneRenderer::CreateCustomMesh()
 		)
 	);
 #pragma endregion
-}
+	}
 
 void Sample3DSceneRenderer::ReleaseDeviceDependentResources()
 {

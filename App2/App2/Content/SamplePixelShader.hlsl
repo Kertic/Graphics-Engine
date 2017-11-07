@@ -31,12 +31,12 @@ if (input.Lighttype.x >= 0.8f && input.Lighttype.x < 1.8f) {
 }
 //Spot light
 if (input.Lighttype.x >= 1.8f && input.Lighttype.x < 2.8f) {
-	float3 pos = float3(input.pos.xyz);
+	float3 pos = float3(input.worldPos.xyz);
 	float3 lightDir = normalize(input.Lightpos - pos);
 	float spotfactor = 0.0f;
 	float surfaceRatio = saturate(dot(-lightDir, input.Lightnorm));
 	//0.5 is the cone ratio
-	if (surfaceRatio > 0.5) {
+	if (surfaceRatio > 0.7) {
 		spotfactor = 1.0f;
 	}
 	float lightRatio = saturate(dot(lightDir, input.normWorld));

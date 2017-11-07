@@ -102,14 +102,19 @@ void Sample3DSceneRenderer::CreateWindowSizeDependentResources()
 	m_eye = eye;
 	m_at = at;
 	m_up = up;
+	
 	XMStoreFloat4x4(&camera, XMMatrixLookAtLH(eye, at, up));
 	XMStoreFloat4x4(&m_PlaneConstantBufferData.view, XMMatrixTranspose(XMMatrixInverse(0, XMMatrixLookAtLH(eye, at, up))));
 	XMStoreFloat4x4(&m_CustomMeshConstantBufferData.view, XMMatrixTranspose(XMMatrixInverse(0, XMMatrixLookAtLH(eye, at, up))));
 	XMStoreFloat4x4(&m_PyramidconstantBufferData.view, XMMatrixTranspose(XMMatrixInverse(0, XMMatrixLookAtLH(eye, at, up))));
 
-
+	
 	XMMATRIX newcamera = XMLoadFloat4x4(&camera);
-	XMVECTOR pos = newcamera.r[3];
+	XMMATRIX tempCam = XMMatrixInverse(0, newcamera);
+	XMVECTOR pos;// = newcamera.r[3];
+	XMVECTOR rot;
+	XMVECTOR scale;
+	XMMatrixDecompose(&scale, &rot, &pos, newcamera);
 	XMStoreFloat4(&m_PlaneConstantBufferData.cameraPosition, pos);
 	XMStoreFloat4(&m_PyramidconstantBufferData.cameraPosition, pos);
 	XMStoreFloat4(&m_CustomMeshConstantBufferData.cameraPosition, pos);
@@ -207,7 +212,7 @@ void Sample3DSceneRenderer::Update(DX::StepTimer const& timer)
 	XMVECTOR pos;// = newcamera.r[3];
 	XMVECTOR rot;
 	XMVECTOR scale;
-	XMMatrixDecompose(&scale, &rot, &pos, XMMatrixInverse(0, newcamera));
+	XMMatrixDecompose(&scale, &rot, &pos,  newcamera);
 
 	
 	XMStoreFloat4(&m_PlaneConstantBufferData.cameraPosition, pos);

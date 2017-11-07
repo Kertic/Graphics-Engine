@@ -84,7 +84,7 @@ PixelShaderInput main(VertexShaderInput input, uint instanceID : SV_InstanceID)
 	//output.Lightpos = mul(output.Lightpos, projection);
 	output.Lightpos = Lightpos;
 	output.Lighttype = Lighttype;
-	output.Specularity = 10;
+	output.Specularity = 128;
 
 	if (instanceID == 2) {
 		output.Specularity = 10;

@@ -90,6 +90,7 @@ namespace App2
 		LightNormalColorPositionType DirectionalLight;
 		LightNormalColorPositionType PointLight;
 		LightNormalColorPositionType SpotLight;
+		float light_DynamicOffset;
 	};
 }
 

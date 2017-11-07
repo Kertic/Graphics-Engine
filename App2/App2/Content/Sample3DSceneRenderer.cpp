@@ -40,7 +40,7 @@ Sample3DSceneRenderer::Sample3DSceneRenderer(const std::shared_ptr<DX::DeviceRes
 		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
 		XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f),
 		XMFLOAT4((float)CurrentLightingOptions::SPOT_LIGHTING, 0.0f, 0.0f, 0.0f) };
-
+	light_DynamicOffset = 0.0f;
 
 }
 
@@ -165,6 +165,15 @@ void Sample3DSceneRenderer::Update(DX::StepTimer const& timer)
 	if (buttons['3']) {
 		currentLight = SPOT_LIGHTING;
 	}
+	if (buttons['4']) {
+		light_DynamicOffset += 0.05;
+	}
+	if (buttons['5']) {
+		light_DynamicOffset -= 0.05;
+	}
+	if (buttons['6']) {
+		light_DynamicOffset = 0.0f;
+	}
 
 	Windows::UI::Input::PointerPoint^ point = nullptr;
 
@@ -182,6 +191,27 @@ void Sample3DSceneRenderer::Update(DX::StepTimer const& timer)
 			newcamera.r[3] = pos;
 		}
 	}
+
+#pragma region Update Lights
+	DirectionalLight = {
+		XMFLOAT4(0.0f, -0.5f + light_DynamicOffset, 0.5f + light_DynamicOffset, 1.0f),
+		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
+		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
+		XMFLOAT4((float)CurrentLightingOptions::DIRECTIONAL_LIGHTING, 0.0f, 0.0f, 0.0f) };
+
+	PointLight = {
+		XMFLOAT4(0.0f, -0.5f, 0.5f, 1.0f),
+		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
+		XMFLOAT4(0.0f, -1.0f + light_DynamicOffset, 0.0f, 1.0f),
+		XMFLOAT4((float)CurrentLightingOptions::POINT_LIGHTING, 0.0f, 0.0f, 0.0f) };
+
+	SpotLight = {
+		XMFLOAT4(0.0f, -0.5f , 0.0f + light_DynamicOffset, 1.0f),
+		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
+		XMFLOAT4(0.0f, 1.0f + light_DynamicOffset, 0.0f, 1.0f),
+		XMFLOAT4((float)CurrentLightingOptions::SPOT_LIGHTING, 0.0f, 0.0f, 0.0f) };
+#pragma endregion
+
 
 	XMStoreFloat4x4(&camera, newcamera);
 

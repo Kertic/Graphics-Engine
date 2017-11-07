@@ -200,8 +200,8 @@ void Sample3DSceneRenderer::Update(DX::StepTimer const& timer)
 		XMFLOAT4((float)CurrentLightingOptions::DIRECTIONAL_LIGHTING, 0.0f, 0.0f, 0.0f) };
 
 	PointLight = {
-		XMFLOAT4(0.0f, -0.5f, 0.5f, 1.0f),
-		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
+		XMFLOAT4(0.0f, -0.5f, 0.5f + light_DynamicOffset, 1.0f),
+		XMFLOAT4(1.0f, 1.0f, 1.0f , 1.0f),
 		XMFLOAT4(0.0f, -1.0f + light_DynamicOffset, 0.0f, 1.0f),
 		XMFLOAT4((float)CurrentLightingOptions::POINT_LIGHTING, 0.0f, 0.0f, 0.0f) };
 

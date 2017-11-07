@@ -32,11 +32,14 @@ struct PixelShaderInput
 	float3 color : COLOR0;
 	float3 normWorld : NORMAL;
 	float3 normView : NORMAL2;
+	
+	float4 camPosition : POSITION4;
 
 	float3 Lightnorm : NORMAL1;
 	float3 Lightcolor : COLOR1;
 	float3 Lightpos : POSITION1;
 	float3 Lighttype : POSITION2;
+	float Specularity : COLOR2;
 	
 };
 
@@ -46,7 +49,8 @@ PixelShaderInput main(VertexShaderInput input, uint instanceID : SV_InstanceID)
 	PixelShaderInput output;
 	float4 pos = float4(input.pos, 1.0f);
 	float4 nor = float4(input.norm, 0.0f);
-	
+	output.camPosition = float4(view[3][0], view[3][1], view[3][2], view[3][3]);
+
 	// Transform the vertex position into projected space.
 	pos = mul(pos, model[instanceID]);
 	output.worldPos = pos;
@@ -78,6 +82,11 @@ PixelShaderInput main(VertexShaderInput input, uint instanceID : SV_InstanceID)
 	//output.Lightpos = mul(output.Lightpos, projection);
 	output.Lightpos = Lightpos;
 	output.Lighttype = Lighttype;
+	output.Specularity = 128;
+
+	if (instanceID == 2) {
+		output.Specularity = 10;
+	}
 	
 	return output;
 }

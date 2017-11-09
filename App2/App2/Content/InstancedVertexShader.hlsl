@@ -20,6 +20,7 @@ struct VertexShaderInput
 	float3 pos : POSITION;
 	float3 color : COLOR0;
 	float3 norm : NORMAL;
+	float2 uv : TEXCOORD;
 	
 };
 
@@ -33,7 +34,8 @@ struct PixelShaderInput
 	float3 color : COLOR0;
 	float3 normWorld : NORMAL;
 	float3 normView : NORMAL2;
-	
+	float2 uv : TEXCOORD;
+
 	float4 camPosition : POSITION4;
 
 	float3 Lightnorm : NORMAL1;
@@ -90,5 +92,6 @@ PixelShaderInput main(VertexShaderInput input, uint instanceID : SV_InstanceID)
 		output.Specularity = 10;
 	}
 	
+	output.uv = input.uv;
 	return output;
 }

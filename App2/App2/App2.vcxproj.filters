@@ -68,6 +68,9 @@
     <ClCompile Include="App2Main.cpp" />
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="Content\DDSTextureLoader.cpp">
+      <Filter>Content</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.h" />
@@ -75,9 +78,15 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="defines.h" />
+    <ClInclude Include="Content\DDSTextureLoader.h">
+      <Filter>Content</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Assets\StoreLogo.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\cartoon_stone2_seamless.dds">
       <Filter>Assets</Filter>
     </Image>
   </ItemGroup>

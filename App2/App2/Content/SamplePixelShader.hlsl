@@ -1,4 +1,7 @@
 // Per-pixel color data passed through the pixel shader.
+
+texture2D baseTexture : register (t0);
+SamplerState filter : register (s0);
 struct PixelShaderInput
 {
 	float4 pos : SV_POSITION;
@@ -6,6 +9,7 @@ struct PixelShaderInput
 	float3 color : COLOR0;
 	float3 normWorld : NORMAL;
 	float3 normView : NORMAL2;
+	float2 uv : TEXCOORD;
 
 	float4 camPosition : POSITION4;
 
@@ -22,10 +26,11 @@ float4 main(PixelShaderInput input) : SV_TARGET
 {
 	float lightRatio;
 float3 LightDir;
+float3 baseColor = float3( baseTexture.Sample(filter, input.uv).xyz);
 	//This is directional Light
 	 if (input.Lighttype.x >= 0.0f && input.Lighttype.x < 0.8f) {
 		  lightRatio = saturate(dot(-input.Lightnorm, input.normWorld));
-		 input.color = lightRatio * input.Lightcolor * input.color;
+		 input.color = lightRatio * input.Lightcolor * baseColor;
 		 LightDir = input.Lightnorm;
 		}
 //point light
@@ -33,7 +38,7 @@ if (input.Lighttype.x >= 0.8f && input.Lighttype.x < 1.8f) {
 	float3 pos = float3(input.worldPos.xyz);
 	float3 lightDir = normalize(input.Lightpos - pos);
 	 lightRatio = saturate(dot(lightDir, input.normWorld));
-	input.color = lightRatio * input.Lightcolor * input.color;
+	input.color = lightRatio * input.Lightcolor * baseColor;
 	LightDir = input.worldPos.xyz - input.Lightpos;
 }
 //Spot light
@@ -48,7 +53,10 @@ if (input.Lighttype.x >= 1.8f && input.Lighttype.x < 2.8f) {
 		spotfactor = 1.0f;
 	}
 	 lightRatio = saturate(dot(lightDir, input.normWorld)) * spotfactor;
-	input.color = lightRatio * input.color * input.Lightcolor;
+	 float atten = 1.0 - saturate((1.0 - surfaceRatio) / (1.0 - 0.75));
+	 float atten2 = 1.0 - saturate(length(input.Lightpos - input.normWorld) / 5.0f);
+	 
+	 input.color = lightRatio * baseColor * input.Lightcolor * atten *atten2;
 }
 
 float3 reflectVec = reflect(normalize(LightDir), input.normWorld);
@@ -57,7 +65,7 @@ float specDot = saturate(dot(reflectVec, normalize(toCam)));
 specDot = pow(specDot, input.Specularity);
 
 
-float3 reflectedLight = input.Lightcolor * specDot *lightRatio;
+float3 reflectedLight = input.Lightcolor * specDot * lightRatio;
 
 
 

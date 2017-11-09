@@ -1,6 +1,7 @@
 ﻿#include "pch.h"
 #include "Sample3DSceneRenderer.h"
 #include "Mesh.h"
+#include "Content\DDSTextureLoader.h"
 
 #include "..\Common\DirectXHelper.h"
 
@@ -394,8 +395,8 @@ void Sample3DSceneRenderer::Render()
 		0
 	);
 
-	// Each vertex is one instance of the VertexPositionColorNormal struct.
-	UINT stride = sizeof(VertexPositionColorNormal);
+	// Each vertex is one instance of the VertexPositionColorNormalUV struct.
+	UINT stride = sizeof(VertexPositionColorNormalUV);
 	UINT offset = 0;
 	context->IASetVertexBuffers(
 		0,
@@ -437,7 +438,9 @@ void Sample3DSceneRenderer::Render()
 		nullptr,
 		0
 	);
-
+	//Use the Pyramid b/c this has no texture
+	context->PSSetShaderResources(0, 1, m_CustomMeshShaderResourceView.GetAddressOf());
+	context->PSSetSamplers(0, 1, m_CustomMeshSamplerState.GetAddressOf());
 	// Draw the objects.
 	context->DrawIndexed(
 		m_PlaneIndexCount,
@@ -461,8 +464,8 @@ void Sample3DSceneRenderer::Render()
 	//		0
 	//	);
 	//
-	//	// Each vertex is one instance of the VertexPositionColorNormal struct.
-	//	stride = sizeof(VertexPositionColorNormal);
+	//	// Each vertex is one instance of the VertexPositionColorNormalUV struct.
+	//	stride = sizeof(VertexPositionColorNormalUV);
 	//	offset = 0;
 	//	context->IASetVertexBuffers(
 	//		0,
@@ -526,8 +529,8 @@ void Sample3DSceneRenderer::Render()
 		0
 	);
 
-	// Each vertex is one instance of the VertexPositionColorNormal struct.
-	stride = sizeof(VertexPositionColorNormal);
+	// Each vertex is one instance of the VertexPositionColorNormalUV struct.
+	stride = sizeof(VertexPositionColorNormalUV);
 	offset = 0;
 	context->IASetVertexBuffers(
 		0,
@@ -569,6 +572,8 @@ void Sample3DSceneRenderer::Render()
 		nullptr,
 		0
 	);
+	context->PSSetShaderResources(0, 1, m_CustomMeshShaderResourceView.GetAddressOf());
+	context->PSSetSamplers(0, 1, m_CustomMeshSamplerState.GetAddressOf());
 
 	// Draw the objects.
 	context->DrawIndexedInstanced(m_CustomMeshIndexCount, MAX_INSTANCES_OF_GEOMETRY, 0, 0, 0);
@@ -609,6 +614,7 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 			{ "COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 			{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		};
 #pragma region Cube
 
@@ -697,6 +703,29 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 
 
 		CD3D11_BUFFER_DESC constantBufferDesc(sizeof(ModelViewProjectionConstantBuffer), D3D11_BIND_CONSTANT_BUFFER);
+		D3D11_SAMPLER_DESC samplerDesc;
+		ZeroMemory(&samplerDesc, sizeof(samplerDesc));
+		samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+		samplerDesc.MaxAnisotropy = 0;
+		samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+		samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+		samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+		samplerDesc.MipLODBias = 0.0f;
+		samplerDesc.MinLOD = 0;
+		samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+		samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+		samplerDesc.BorderColor[0] = 0.0f;
+		samplerDesc.BorderColor[1] = 0.0f;
+		samplerDesc.BorderColor[2] = 0.0f;
+		samplerDesc.BorderColor[3] = 0.0f;
+		
+		DX::ThrowIfFailed(
+			m_deviceResources->GetD3DDevice()->CreateSamplerState(
+				&samplerDesc,
+				&m_CustomMeshSamplerState
+			)
+		);
+
 #pragma region Cube
 		DX::ThrowIfFailed(
 			m_deviceResources->GetD3DDevice()->CreatePixelShader(
@@ -754,6 +783,8 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 				&m_CustomMeshConstantBuffer
 			)
 		);
+
+		CreateDDSTextureFromFile(m_deviceResources->GetD3DDevice(), L"Assets/cartoon_stone2_seamless.dds", nullptr, &m_CustomMeshShaderResourceView);
 #pragma endregion
 	});
 
@@ -764,7 +795,7 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 
 
 		// Load mesh vertices. Each vertex has a position and a color.
-		static const VertexPositionColorNormal cubeVertices[] =
+		static const VertexPositionColorNormalUV cubeVertices[] =
 		{
 
 			{ XMFLOAT3(-5.0f, -2.0f,  -5.0f), XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f) },
@@ -827,7 +858,7 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 
 
 
-		static const VertexPositionColorNormal pyramidVerts[] =
+		static const VertexPositionColorNormalUV pyramidVerts[] =
 		{
 			{ XMFLOAT3(-0.5f, 0.5f, -0.5f), XMFLOAT3(1.0f, 1.0f, 0.5f) },
 			{ XMFLOAT3(0.5f, 0.5f, -0.5f), XMFLOAT3(1.0f, 1.0f, 0.5f) },
@@ -905,7 +936,7 @@ void Sample3DSceneRenderer::CreateCustomMesh()
 	Mesh testMesh;
 	testMesh.LoadMeshFromFile("Assets/test pyramid.obj");
 #pragma region Create Mesh Verts 1
-	std::vector<VertexPositionColorNormal> MeshVerts;
+	std::vector<VertexPositionColorNormalUV> MeshVerts;
 
 	std::vector<short> MeshIndexes;
 	for (unsigned int i = 0; i < testMesh.UniqueVertexArray.size(); i++)
@@ -916,7 +947,8 @@ void Sample3DSceneRenderer::CreateCustomMesh()
 				0.0f,
 				1.0f,
 				0.0f),
-		  XMFLOAT3(testMesh.UniqueVertexArray[i].m_normalVec) });
+		  XMFLOAT3(testMesh.UniqueVertexArray[i].m_normalVec),
+		XMFLOAT2(testMesh.UniqueVertexArray[i].m_UVcoords.x, testMesh.UniqueVertexArray[i].m_UVcoords.y) });
 
 #ifdef _TRANSLATEMODELS
 		MeshVerts[MeshVerts.size() - 1].pos.x += 0.5f;
@@ -935,7 +967,7 @@ void Sample3DSceneRenderer::CreateCustomMesh()
 	vertexBufferData.pSysMem = MeshVerts.data();
 	vertexBufferData.SysMemPitch = 0;
 	vertexBufferData.SysMemSlicePitch = 0;
-	CD3D11_BUFFER_DESC vertexBufferDesc(sizeof(VertexPositionColorNormal) * MeshVerts.size(), D3D11_BIND_VERTEX_BUFFER);
+	CD3D11_BUFFER_DESC vertexBufferDesc(sizeof(VertexPositionColorNormalUV) * MeshVerts.size(), D3D11_BIND_VERTEX_BUFFER);
 	DX::ThrowIfFailed(
 		m_deviceResources->GetD3DDevice()->CreateBuffer(
 			&vertexBufferDesc,
@@ -984,6 +1016,8 @@ void Sample3DSceneRenderer::ReleaseDeviceDependentResources()
 	m_CustomMeshVertexShader.Reset();
 	m_CustomMeshPixelShader.Reset();
 	m_CustomMeshConstantBuffer.Reset();
+	//m_CustomMeshResource.Reset();
+	m_CustomMeshShaderResourceView.Reset();
 
 	LightConstantBuffer.Reset();
 }

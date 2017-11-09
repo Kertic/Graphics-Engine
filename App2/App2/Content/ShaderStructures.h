@@ -12,11 +12,12 @@ namespace App2
 	};
 
 	// Used to send per-vertex data to the vertex shader.
-	struct VertexPositionColorNormal
+	struct VertexPositionColorNormalUV
 	{
 		DirectX::XMFLOAT3 pos;
 		DirectX::XMFLOAT3 color;
 		DirectX::XMFLOAT3 norm;
+		DirectX::XMFLOAT2 uv;
 
 	};
 

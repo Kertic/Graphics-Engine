@@ -438,7 +438,7 @@ void Sample3DSceneRenderer::Render()
 		nullptr,
 		0
 	);
-	//Use the Pyramid b/c this has no texture
+	//Use the CustomMesh b/c this has no texture
 	context->PSSetShaderResources(0, 1, m_CustomMeshShaderResourceView.GetAddressOf());
 	context->PSSetSamplers(0, 1, m_CustomMeshSamplerState.GetAddressOf());
 	// Draw the objects.
@@ -784,7 +784,7 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 			)
 		);
 
-		CreateDDSTextureFromFile(m_deviceResources->GetD3DDevice(), L"Assets/cartoon_stone2_seamless.dds", nullptr, &m_CustomMeshShaderResourceView);
+		CreateDDSTextureFromFile(m_deviceResources->GetD3DDevice(), L"Assets/rock.dds", nullptr, &m_CustomMeshShaderResourceView);
 #pragma endregion
 	});
 
@@ -934,7 +934,7 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 void Sample3DSceneRenderer::CreateCustomMesh()
 {
 	Mesh testMesh;
-	testMesh.LoadMeshFromFile("Assets/test pyramid.obj");
+	testMesh.LoadMeshFromFile("Assets/asteroid.obj");
 #pragma region Create Mesh Verts 1
 	std::vector<VertexPositionColorNormalUV> MeshVerts;
 

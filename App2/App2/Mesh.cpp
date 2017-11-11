@@ -48,8 +48,14 @@ void Mesh::LoadMeshFromFile(std::string inFileName)
 						if (termCount == 3)
 							Zfloat.append(1, testString[i]);
 
-						if (testString[i] == ' ')
+						if (testString[i] == ' ') {
+							while (testString[i] == ' ') {
+								++i;
+							}
+							--i;
 							++termCount;
+						}
+							
 					}
 
 					Vertexes.push_back(XMFLOAT3(stof(Xfloat), stof(Yfloat), stof(Zfloat)));
@@ -77,8 +83,13 @@ void Mesh::LoadMeshFromFile(std::string inFileName)
 						if (termCount == 3)
 							Zfloat.append(1, testString[i]);
 
-						if (testString[i] == ' ')
+						if (testString[i] == ' ') {
+							while (testString[i] == ' ') {
+								++i;
+							}
+							--i;
 							++termCount;
+						}
 					}
 
 					Normals.push_back(XMFLOAT3(stof(Xfloat), stof(Yfloat), stof(Zfloat)));
@@ -103,8 +114,13 @@ void Mesh::LoadMeshFromFile(std::string inFileName)
 						if (termCount == 2)
 							Yfloat.append(1, testString[i]);
 
-						if (testString[i] == ' ')
+						if (testString[i] == ' ') {
+							while (testString[i] == ' ') {
+								++i;
+							}
+							--i;
 							++termCount;
+						}
 					}
 
 					UVs.push_back(XMFLOAT2(stof(Xfloat), stof(Yfloat)));
@@ -122,6 +138,10 @@ void Mesh::LoadMeshFromFile(std::string inFileName)
 						Terms[currentTerm].append(1, testString[i]);
 
 						if (testString[i] == ' ') {
+							while (testString[i] == ' ') {
+								++i;
+							}
+							--i;
 							++currentTerm;
 							Terms.push_back(std::string());
 						}

@@ -89,6 +89,9 @@
     <Image Include="Assets\cartoon_stone2_seamless.dds">
       <Filter>Assets</Filter>
     </Image>
+    <Image Include="Assets\rock.dds">
+      <Filter>Assets</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest" />
@@ -101,5 +104,10 @@
     <FxCompile Include="Content\InstancedVertexShader.hlsl">
       <Filter>Content</Filter>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Object Include="Assets\asteroid.obj">
+      <Filter>Assets</Filter>
+    </Object>
   </ItemGroup>
 </Project>

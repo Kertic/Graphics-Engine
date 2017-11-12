@@ -29,6 +29,9 @@ struct VertexShaderInput
 // Per-pixel color data passed through the pixel shader.
 struct PixelShaderInput
 {
+
+	float4 pointsForGeoShader : POSITION5;
+	float2 geoShaderUv : TEXCOORD1;
 	float4 pos : SV_POSITION;
 	float3 worldPos : POSITION3;
 	float3 color : COLOR0;
@@ -43,8 +46,11 @@ struct PixelShaderInput
 	float3 Lightpos : POSITION1;
 	float3 Lighttype : POSITION2;
 	float Specularity : COLOR2;
+
 	
 };
+
+
 
 // Simple shader to do vertex processing on the GPU.
 PixelShaderInput main(VertexShaderInput input, uint instanceID : SV_InstanceID)
@@ -93,5 +99,6 @@ PixelShaderInput main(VertexShaderInput input, uint instanceID : SV_InstanceID)
 	}
 	
 	output.uv = input.uv;
+	output.pointsForGeoShader = cameraPos;
 	return output;
 }

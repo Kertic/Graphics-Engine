@@ -4,6 +4,9 @@ texture2D baseTexture : register (t0);
 SamplerState filter : register (s0);
 struct PixelShaderInput
 {
+
+	float4 pointsForGeoShader : POSITION5;
+	float2 geoShaderUv : TEXCOORD1;
 	float4 pos : SV_POSITION;
 	float3 worldPos : POSITION3;
 	float3 color : COLOR0;
@@ -19,6 +22,7 @@ struct PixelShaderInput
 	float3 Lighttype : POSITION2;
 	float Specularity : COLOR2;
 
+
 };
 
 // A pass-through function for the (interpolated) color data.
@@ -27,6 +31,7 @@ float4 main(PixelShaderInput input) : SV_TARGET
 	float lightRatio;
 float3 LightDir;
 float3 baseColor = float3( baseTexture.Sample(filter, input.uv).xyz);
+input.color = baseColor;
 	//This is directional Light
 	 if (input.Lighttype.x >= 0.0f && input.Lighttype.x < 0.8f) {
 		  lightRatio = saturate(dot(-input.Lightnorm, input.normWorld));

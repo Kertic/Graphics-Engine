@@ -104,6 +104,15 @@
     <FxCompile Include="Content\InstancedVertexShader.hlsl">
       <Filter>Content</Filter>
     </FxCompile>
+    <FxCompile Include="Content\BillboardGeometryShader.hlsl">
+      <Filter>Content</Filter>
+    </FxCompile>
+    <FxCompile Include="Content\BillboardPixelShader.hlsl">
+      <Filter>Content</Filter>
+    </FxCompile>
+    <FxCompile Include="Content\BillboardVertexShader.hlsl">
+      <Filter>Content</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <Object Include="Assets\asteroid.obj">

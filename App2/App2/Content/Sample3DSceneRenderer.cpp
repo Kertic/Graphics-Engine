@@ -580,6 +580,79 @@ void Sample3DSceneRenderer::Render()
 
 #pragma endregion
 
+#pragma region Draw Clouds
+	// Prepare the constant buffer to send it to the graphics device.
+	// We just use custom mesh constant buffer because we don't use the model information and the remaining info would be the same
+	context->UpdateSubresource1(
+		m_CustomMeshConstantBuffer.Get(),
+		0,
+		NULL,
+		&m_CustomMeshConstantBufferData,
+		0,
+		0,
+		0
+	);
+
+	// Each vertex is one instance of the VertexPositionColorNormalUV struct.
+	stride = sizeof(PositionScalerUV);
+	offset = 0;
+	context->IASetVertexBuffers(
+		0,
+		1,
+		m_CloudVertexBuffer.GetAddressOf(),
+		&stride,
+		&offset
+	);
+
+
+
+	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+
+	context->IASetInputLayout(m_CloudInputLayout.Get());
+
+	// Attach our vertex shader.
+	context->VSSetShader(
+		m_BillboardVertexShader.Get(),
+		nullptr,
+		0
+	);
+
+	// Send the constant buffer to the graphics device.
+	context->VSSetConstantBuffers1(
+		0,
+		1,
+		m_CustomMeshConstantBuffer.GetAddressOf(),
+		nullptr,
+		nullptr
+	);
+
+	// Attach our pixel shader.
+	context->PSSetShader(
+		m_BillboardPixelShader.Get(),
+		nullptr,
+		0
+	);
+
+	//Using the  custom mesh data for testing, will update textures once this step is confirmed
+	context->PSSetShaderResources(0, 1, m_CustomMeshShaderResourceView.GetAddressOf());
+	context->PSSetSamplers(0, 1, m_CustomMeshSamplerState.GetAddressOf());
+	context->GSSetShader(m_BillboardGeometryShader.Get(), nullptr, 0);
+	//Again, we just use the custom mesh's buffers because it already contains the info we need
+
+	context->GSSetConstantBuffers1(
+		0,
+		1,
+		m_CustomMeshConstantBuffer.GetAddressOf(),
+		nullptr,
+		nullptr
+	);
+	// Draw the objects.
+	context->Draw(m_CloudCount, 0);
+
+	context->GSSetShader(nullptr, nullptr, 0);
+#pragma endregion
+
+
 	CD3D11_BUFFER_DESC LightConstantBufferDesc(sizeof(LightNormalColorPositionType), D3D11_BIND_CONSTANT_BUFFER);
 	//Change this dynamically based on current light
 	if (currentLight == DIRECTIONAL_LIGHTING) {
@@ -604,6 +677,9 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 	// Load shaders asynchronously.
 	auto loadVSTask = DX::ReadDataAsync(L"InstancedVertexShader.cso");
 	auto loadPSTask = DX::ReadDataAsync(L"SamplePixelShader.cso");
+	auto loadVSTask2 = DX::ReadDataAsync(L"BillboardVertexShader.cso");
+	auto loadPSTask2 = DX::ReadDataAsync(L"BillboardPixelShader.cso");
+	auto loadGSTask = DX::ReadDataAsync(L"BillboardGeometryShader.cso");
 
 	// After the vertex shader file is loaded, create the shader and input layout.
 	auto createVSTask = loadVSTask.then([this](const std::vector<byte>& fileData) {
@@ -618,7 +694,7 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 		};
 #pragma region Cube
 
-
+		
 
 		DX::ThrowIfFailed(
 			m_deviceResources->GetD3DDevice()->CreateVertexShader(
@@ -689,7 +765,87 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 		);
 #pragma endregion
 	});
+	//Create Geometry shader
+	auto createGSTask = loadGSTask.then([this](const std::vector<byte>& fileData) {
 
+
+
+
+
+		DX::ThrowIfFailed(
+			m_deviceResources->GetD3DDevice()->CreateGeometryShader(
+				&fileData[0],
+				fileData.size(),
+				nullptr,
+				&m_BillboardGeometryShader
+			)
+		);
+
+
+
+#pragma region Cloud information
+		static const PositionScalerUV cloudVerts[] = {
+			{XMFLOAT4(0.0f, 3.0f, 0.0f, 1.0f), XMFLOAT2(2.0f, 2.0f), XMFLOAT2(0.0f, 0.0f)}
+		};
+#pragma endregion
+
+
+		D3D11_SUBRESOURCE_DATA vertexBufferData = { 0 };
+		vertexBufferData.pSysMem = cloudVerts;
+		vertexBufferData.SysMemPitch = 0;
+		vertexBufferData.SysMemSlicePitch = 0;
+		CD3D11_BUFFER_DESC vertexBufferDesc(sizeof(cloudVerts), D3D11_BIND_VERTEX_BUFFER);
+		DX::ThrowIfFailed(
+			m_deviceResources->GetD3DDevice()->CreateBuffer(
+				&vertexBufferDesc,
+				&vertexBufferData,
+				&m_CloudVertexBuffer
+			)
+		);
+		m_CloudPoints = cloudVerts[0];
+
+	});
+	auto createVSTask2 = loadVSTask2.then([this](const std::vector<byte>& fileData) {
+		
+		
+		static const D3D11_INPUT_ELEMENT_DESC geometryBufferDesc[] =
+		{
+			{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "SIZE", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		};
+		DX::ThrowIfFailed(
+			m_deviceResources->GetD3DDevice()->CreateVertexShader(
+				&fileData[0],
+				fileData.size(),
+				nullptr,
+				&m_BillboardVertexShader
+			)
+		);
+		DX::ThrowIfFailed(
+			m_deviceResources->GetD3DDevice()->CreateInputLayout(
+				geometryBufferDesc,
+				ARRAYSIZE(geometryBufferDesc),
+				&fileData[0],
+				fileData.size(),
+				&m_CloudInputLayout
+			)
+		);
+
+
+	});
+	auto createPSTask2 = loadPSTask2.then([this](const std::vector<byte>& fileData) {
+
+		DX::ThrowIfFailed(
+			m_deviceResources->GetD3DDevice()->CreatePixelShader(
+				&fileData[0],
+				fileData.size(),
+				nullptr,
+				&m_BillboardPixelShader
+			)
+		);
+
+	});
 	// After the pixel shader file is loaded, create the shader and constant buffer.
 	auto createPSTask = loadPSTask.then([this](const std::vector<byte>& fileData) {
 
@@ -788,8 +944,10 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 #pragma endregion
 	});
 
+
+
 	// Once both shaders are loaded, create the mesh.
-	auto createCubeTask = (createPSTask && createVSTask).then([this]() {
+	auto createCubeTask = (createPSTask && createVSTask && createGSTask && createPSTask2 && createVSTask2).then([this]() {
 #pragma region Create cube verts
 
 

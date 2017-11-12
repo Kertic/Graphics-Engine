@@ -63,6 +63,17 @@ namespace App2
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_CustomMeshShaderResourceView;
 		Microsoft::WRL::ComPtr<ID3D11SamplerState>	m_CustomMeshSamplerState;
 
+
+		//Resources for billboard clouds
+		Microsoft::WRL::ComPtr<ID3D11InputLayout>	m_CloudInputLayout;
+		Microsoft::WRL::ComPtr<ID3D11PixelShader>	m_BillboardPixelShader;
+		Microsoft::WRL::ComPtr<ID3D11VertexShader>	m_BillboardVertexShader;
+		Microsoft::WRL::ComPtr<ID3D11GeometryShader> m_BillboardGeometryShader;
+		Microsoft::WRL::ComPtr<ID3D11Buffer> m_CloudVertexBuffer;
+		static const unsigned int m_CloudCount = 1;
+		PositionScalerUV m_CloudPoints;
+
+
 		// System resources for cube geometry.
 		ModelViewProjectionConstantBuffer	m_PlaneConstantBufferData;
 		uint32	m_PlaneIndexCount;

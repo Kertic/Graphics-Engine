@@ -27,4 +27,10 @@ namespace App2
 		DirectX::XMFLOAT4 Lightpos;
 		DirectX::XMFLOAT4 LightType;
 	};
+
+	struct PositionScalerUV {
+		DirectX::XMFLOAT4 CloudStartPosition;
+		DirectX::XMFLOAT2 XandYScale;
+		DirectX::XMFLOAT2 UV;
+	};
 }

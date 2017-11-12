@@ -189,6 +189,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <Image Include="Assets\cartoon_stone2_seamless.dds" />
+    <Image Include="Assets\Cloud1.dds" />
+    <Image Include="Assets\Cloud2.dds" />
     <Image Include="Assets\LockScreenLogo.scale-200.png" />
     <Image Include="Assets\rock.dds" />
     <Image Include="Assets\SplashScreen.scale-200.png" />

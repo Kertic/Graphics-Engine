@@ -92,6 +92,12 @@
     <Image Include="Assets\rock.dds">
       <Filter>Assets</Filter>
     </Image>
+    <Image Include="Assets\Cloud1.dds">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\Cloud2.dds">
+      <Filter>Assets</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest" />

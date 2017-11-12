@@ -197,6 +197,15 @@ void Sample3DSceneRenderer::Update(DX::StepTimer const& timer)
 		XMFLOAT4(0.0f, 1.0f + light_DynamicOffset, 0.0f, 1.0f),
 		XMFLOAT4((float)CurrentLightingOptions::SPOT_LIGHTING, 0.0f, 0.0f, 0.0f) };
 #pragma endregion
+#pragma region Animate clouds
+	if ((int)timer.GetTotalSeconds() % 2 == 0) {
+		CreateDDSTextureFromFile(m_deviceResources->GetD3DDevice(), L"Assets/Cloud1.dds", nullptr, &m_CloudShaderResourceView);
+	}
+	else
+	{
+		CreateDDSTextureFromFile(m_deviceResources->GetD3DDevice(), L"Assets/Cloud2.dds", nullptr, &m_CloudShaderResourceView);
+	}
+#pragma endregion
 
 
 	UpdateCamera(timer, 5.0f, 0.75f);
@@ -634,8 +643,8 @@ void Sample3DSceneRenderer::Render()
 	);
 
 	//Using the  custom mesh data for testing, will update textures once this step is confirmed
-	context->PSSetShaderResources(0, 1, m_CustomMeshShaderResourceView.GetAddressOf());
-	context->PSSetSamplers(0, 1, m_CustomMeshSamplerState.GetAddressOf());
+	context->PSSetShaderResources(0, 1, m_CloudShaderResourceView.GetAddressOf());
+	context->PSSetSamplers(0, 1, m_CloudSamplerState.GetAddressOf());
 	context->GSSetShader(m_BillboardGeometryShader.Get(), nullptr, 0);
 	//Again, we just use the custom mesh's buffers because it already contains the info we need
 
@@ -844,6 +853,33 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 				&m_BillboardPixelShader
 			)
 		);
+
+
+
+		D3D11_SAMPLER_DESC samplerDesc;
+		ZeroMemory(&samplerDesc, sizeof(samplerDesc));
+		samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+		samplerDesc.MaxAnisotropy = 0;
+		samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+		samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+		samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+		samplerDesc.MipLODBias = 0.0f;
+		samplerDesc.MinLOD = 0;
+		samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+		samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+		samplerDesc.BorderColor[0] = 0.0f;
+		samplerDesc.BorderColor[1] = 0.0f;
+		samplerDesc.BorderColor[2] = 0.0f;
+		samplerDesc.BorderColor[3] = 0.0f;
+
+		DX::ThrowIfFailed(
+			m_deviceResources->GetD3DDevice()->CreateSamplerState(
+				&samplerDesc,
+				&m_CloudSamplerState
+			)
+		);
+
+		CreateDDSTextureFromFile(m_deviceResources->GetD3DDevice(), L"Assets/Cloud1.dds", nullptr, &m_CloudShaderResourceView);
 
 	});
 	// After the pixel shader file is loaded, create the shader and constant buffer.

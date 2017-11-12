@@ -70,6 +70,8 @@ namespace App2
 		Microsoft::WRL::ComPtr<ID3D11VertexShader>	m_BillboardVertexShader;
 		Microsoft::WRL::ComPtr<ID3D11GeometryShader> m_BillboardGeometryShader;
 		Microsoft::WRL::ComPtr<ID3D11Buffer> m_CloudVertexBuffer;
+		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_CloudShaderResourceView;
+		Microsoft::WRL::ComPtr<ID3D11SamplerState>	m_CloudSamplerState;
 		static const unsigned int m_CloudCount = 1;
 		PositionScalerUV m_CloudPoints;
 

@@ -393,7 +393,7 @@ void Sample3DSceneRenderer::Rotate(float radians)
 #pragma endregion
 
 #pragma region Independant Pyramid Transformations
-	XMStoreFloat4x4(&m_CustomMeshConstantBufferData.model[0], XMMatrixTranspose(XMMatrixTranslation(-1.25f * radians, 0.0f, 0.0f)));
+	XMStoreFloat4x4(&m_CustomMeshConstantBufferData.model[0], XMMatrixTranspose(XMMatrixTranslation(-1.25f * std::fabs( radians - 1.0f * 3.14f), 0.0f, 0.0f)));
 	//XMStoreFloat4x4(&m_PyramidconstantBufferData.model[1], XMMatrixTranspose(XMMatrixRotationY(radians)));
 
 	XMStoreFloat4x4(

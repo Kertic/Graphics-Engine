@@ -56,7 +56,7 @@ DS_OUTPUT main(
    
     
     //Set the height based on one of the color channels, but they're all B/W so any color channel would work
-    Output.pos.y = Output.pos.y +  height.y * height.y * 20.0f;
+    Output.pos.y = Output.pos.y +  height.y * 20.0f;
 
 
  

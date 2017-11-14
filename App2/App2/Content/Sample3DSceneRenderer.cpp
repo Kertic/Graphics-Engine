@@ -1386,4 +1386,39 @@ void Sample3DSceneRenderer::ReleaseDeviceDependentResources()
 	m_CustomMeshShaderResourceView.Reset();
 
 	LightConstantBuffer.Reset();
+
+
+
+	m_SkyboxTexture.Reset();
+
+	m_CustomMeshInputLayout.Reset();
+	m_CustomMeshVertexBuffer.Reset();
+	m_CustomMeshIndexBuffer.Reset();
+	m_CustomMeshVertexShader.Reset();
+	m_CustomMeshPixelShader.Reset();
+	m_CustomMeshConstantBuffer.Reset();
+
+	m_CustomMeshShaderResourceView.Reset();
+	m_CustomMeshSamplerState.Reset();
+
+
+
+	m_CloudInputLayout.Reset();
+	m_BillboardPixelShader.Reset();
+	m_BillboardVertexShader.Reset();
+	m_BillboardGeometryShader.Reset();
+	m_CloudVertexBuffer.Reset();
+	m_CloudShaderResourceView.Reset();
+	m_CloudSamplerState.Reset();
+
+
+
+
+	m_TerrainShaderResourceView.Reset();
+	m_TerrianHullShader.Reset();
+	m_TerrianDomainShader.Reset();
+	m_TerrianTexture.Reset();
+
+	m_TerrainHullShaderConstantBuffer.Reset();
+	m_TerrainDomainShaderConstantBuffer.Reset();
 }

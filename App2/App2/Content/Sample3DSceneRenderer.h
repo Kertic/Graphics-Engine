@@ -86,7 +86,7 @@ Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>	m_CloudShaderResourceView;
 Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>	m_TerrainShaderResourceView;
 		Microsoft::WRL::ComPtr<ID3D11HullShader>	m_TerrianHullShader;
 		Microsoft::WRL::ComPtr<ID3D11DomainShader>	m_TerrianDomainShader;
-		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>	m_TerrianTexture;
+Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>	m_TerrianTexture;
 		unsigned int LevelOfDetail = 1;
 		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_TerrainHullShaderConstantBuffer;
 		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_TerrainDomainShaderConstantBuffer;

@@ -15,3 +15,7 @@ Hold 7 to increase level of detail
 Hold 8 to decrease level of detail
 Press 9 to enable Filled view
 Press 0 to enable wireframe view
+
+
+Press J to change the floor texture to the height map
+Press K to change the floor texture to a rocky texture

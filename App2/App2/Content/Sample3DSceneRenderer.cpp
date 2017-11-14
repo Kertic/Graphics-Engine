@@ -210,6 +210,14 @@ void Sample3DSceneRenderer::Update(DX::StepTimer const& timer)
 		m_deviceResources->GetD3DDevice()->CreateRasterizerState(&rasterDesc, m_RasterizerState.GetAddressOf());
 		m_deviceResources->GetD3DDeviceContext()->RSSetState(m_RasterizerState.Get());
 	}
+	if (buttons['J']) {
+
+		CreateDDSTextureFromFile(m_deviceResources->GetD3DDevice(), L"Assets/Terrain map.dds", nullptr, &m_TerrianTexture);
+	}
+	if (buttons['K']) {
+
+		CreateDDSTextureFromFile(m_deviceResources->GetD3DDevice(), L"Assets/rock.dds", nullptr, &m_TerrianTexture);
+	}
 	m_TerrainConstantBufferData.detailLevel = XMUINT2(LevelOfDetail, 0);
 
 	Windows::UI::Input::PointerPoint^ point = nullptr;
@@ -645,7 +653,7 @@ void Sample3DSceneRenderer::Render()
 		0
 	);
 	//Use the CustomMesh b/c this has no texture
-	context->PSSetShaderResources(0, 1, m_TerrainShaderResourceView.GetAddressOf());
+	context->PSSetShaderResources(0, 1, m_TerrianTexture.GetAddressOf());
 	context->PSSetSamplers(0, 1, m_CustomMeshSamplerState.GetAddressOf());
 	context->HSSetShader(m_TerrianHullShader.Get(), nullptr, 0);
 
@@ -1017,6 +1025,8 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 
 		CreateDDSTextureFromFile(m_deviceResources->GetD3DDevice(), L"Assets/Cloud1.dds", nullptr, &m_CloudShaderResourceView);
 		CreateDDSTextureFromFile(m_deviceResources->GetD3DDevice(), L"Assets/Terrain map.dds", nullptr, &m_TerrainShaderResourceView);
+		CreateDDSTextureFromFile(m_deviceResources->GetD3DDevice(), L"Assets/Terrain map.dds", nullptr, &m_TerrianTexture);
+		
 
 	});
 	// After the pixel shader file is loaded, create the shader and constant buffer.

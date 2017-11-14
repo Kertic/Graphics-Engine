@@ -363,7 +363,7 @@ void Sample3DSceneRenderer::UpdateCamera(DX::StepTimer const& timer, float const
 void Sample3DSceneRenderer::Rotate(float radians)
 {
 	// Prepare to pass the updated model matrix to the shader
-	XMStoreFloat4x4(&m_PlaneConstantBufferData.model[0], XMMatrixTranspose(XMMatrixRotationY(radians)));
+	XMStoreFloat4x4(&m_PlaneConstantBufferData.model[0], XMMatrixTranspose(XMMatrixRotationY(0.0f)));
 
 #pragma region Independant Pyramid Transformations
 	XMStoreFloat4x4(&m_PyramidconstantBufferData.model[0], XMMatrixTranspose(XMMatrixRotationY(-radians)));
@@ -1118,10 +1118,10 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 		static const PositionScalerUV cubeVertices[] =
 		{
 
-			{ XMFLOAT4(-5.0f, -2.0f,  -5.0f, 1.0f),	XMFLOAT2(1.0f, 1.0f), XMFLOAT2(0.1f, 0.1f) },
-			{ XMFLOAT4(-5.0f, -2.0f,  5.0f, 1.0f),	XMFLOAT2(1.0f, 1.0f), XMFLOAT2(0.1f, 1.0f) },
-			{ XMFLOAT4(5.0f,  -2.0f,  -5.0f, 1.0f),	XMFLOAT2(1.0f, 1.0f), XMFLOAT2(1.0f, 0.1f) },
-			{ XMFLOAT4(5.0f,  -2.0f,  5.0f, 1.0f),	XMFLOAT2(1.0f, 1.0f), XMFLOAT2(1.0f, 1.0f) },
+			{ XMFLOAT4(-20.0f, -10.0f,  -20.0f, 1.0f),	XMFLOAT2(1.0f, 1.0f), XMFLOAT2(0.1f, 0.1f) },
+			{ XMFLOAT4(-20.0f, -10.0f,  20.0f, 1.0f),	XMFLOAT2(1.0f, 1.0f), XMFLOAT2(0.1f, 1.0f) },
+			{ XMFLOAT4(20.0f,  -10.0f,  -20.0f, 1.0f),	XMFLOAT2(1.0f, 1.0f), XMFLOAT2(1.0f, 0.1f) },
+			{ XMFLOAT4(20.0f,  -10.0f,  20.0f, 1.0f),	XMFLOAT2(1.0f, 1.0f), XMFLOAT2(1.0f, 1.0f) },
 		};
 
 

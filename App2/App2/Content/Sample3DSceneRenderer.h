@@ -43,6 +43,11 @@ namespace App2
 		Microsoft::WRL::ComPtr<ID3D11VertexShader>	m_PlaneVertexShader;
 		Microsoft::WRL::ComPtr<ID3D11PixelShader>	m_PlanePixelShader;
 		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_PlaneConstantBuffer;
+
+		// Direct3D resources for cube geometry.
+		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_CubeVertexBuffer;
+		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_CubeIndexBuffer;
+		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_CubeConstantBuffer;
 	
 
 
@@ -53,6 +58,7 @@ namespace App2
 		Microsoft::WRL::ComPtr<ID3D11PixelShader>	m_PyramidpixelShader;
 		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_PyramidconstantBuffer;
 		static const unsigned int m_PyramidCount = MAX_INSTANCES_OF_GEOMETRY;
+		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_SkyboxTexture;
 
 		Microsoft::WRL::ComPtr<ID3D11InputLayout>	m_CustomMeshInputLayout;
 		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_CustomMeshVertexBuffer;

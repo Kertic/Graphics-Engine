@@ -102,6 +102,9 @@
     <Image Include="Assets\Terrain map.dds">
       <Filter>Assets</Filter>
     </Image>
+    <Image Include="Assets\sunset_sky.dds">
+      <Filter>Assets</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest" />
@@ -128,6 +131,12 @@
       <Filter>Content</Filter>
     </FxCompile>
     <FxCompile Include="Content\TerrainHullShader.hlsl">
+      <Filter>Content</Filter>
+    </FxCompile>
+    <FxCompile Include="Content\SkyboxPixelShader.hlsl">
+      <Filter>Content</Filter>
+    </FxCompile>
+    <FxCompile Include="Content\SkyboxVertexShader.hlsl">
       <Filter>Content</Filter>
     </FxCompile>
   </ItemGroup>

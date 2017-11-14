@@ -362,12 +362,14 @@ void Sample3DSceneRenderer::UpdateCamera(DX::StepTimer const& timer, float const
 // Rotate the 3D cube model a set amount of radians.
 void Sample3DSceneRenderer::Rotate(float radians)
 {
+
 	// Prepare to pass the updated model matrix to the shader
 	XMStoreFloat4x4(&m_PlaneConstantBufferData.model[0], XMMatrixTranspose(XMMatrixRotationY(0.0f)));
 
 #pragma region Independant Pyramid Transformations
-	XMStoreFloat4x4(&m_PyramidconstantBufferData.model[0], XMMatrixTranspose(XMMatrixRotationY(-radians)));
-	//XMStoreFloat4x4(&m_PyramidconstantBufferData.model[1], XMMatrixTranspose(XMMatrixRotationY(radians)));
+	XMStoreFloat4x4(&m_PyramidconstantBufferData.model[0], XMMatrixTranspose(XMMatrixTranslation(m_PyramidconstantBufferData.cameraPosition.x, m_PyramidconstantBufferData.cameraPosition.y, m_PyramidconstantBufferData.cameraPosition.z)));
+
+
 
 	XMStoreFloat4x4(
 		&m_PyramidconstantBufferData.model[1],
@@ -383,7 +385,7 @@ void Sample3DSceneRenderer::Rotate(float radians)
 #pragma endregion
 
 #pragma region Independant Pyramid Transformations
-	XMStoreFloat4x4(&m_CustomMeshConstantBufferData.model[0], XMMatrixTranspose(XMMatrixRotationY(-radians)));
+	XMStoreFloat4x4(&m_CustomMeshConstantBufferData.model[0], XMMatrixTranspose(XMMatrixTranslation(-1.25f * radians, 0.0f, 0.0f)));
 	//XMStoreFloat4x4(&m_PyramidconstantBufferData.model[1], XMMatrixTranspose(XMMatrixRotationY(radians)));
 
 	XMStoreFloat4x4(
@@ -433,76 +435,78 @@ void Sample3DSceneRenderer::Render()
 
 
 
-	//#pragma region Draw Pyramid
-	//
-	//
-	//
-	//	// Prepare the constant buffer to send it to the graphics device.
-	//	context->UpdateSubresource1(
-	//		m_PyramidconstantBuffer.Get(),
-	//		0,
-	//		NULL,
-	//		&m_PyramidconstantBufferData,
-	//		0,
-	//		0,
-	//		0
-	//	);
-	//
-	//	// Each vertex is one instance of the VertexPositionColorNormalUV struct.
-	//	stride = sizeof(VertexPositionColorNormalUV);
-	//	offset = 0;
-	//	context->IASetVertexBuffers(
-	//		0,
-	//		1,
-	//		m_PyramidvertexBuffer.GetAddressOf(),
-	//		&stride,
-	//		&offset
-	//	);
-	//
-	//	context->IASetIndexBuffer(
-	//		m_PyramidindexBuffer.Get(),
-	//		DXGI_FORMAT_R16_UINT, // Each index is one 16-bit unsigned integer (short).
-	//		0
-	//	);
-	//
-	//	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	//
-	//	context->IASetInputLayout(m_PyramidinputLayout.Get());
-	//
-	//	// Attach our vertex shader.
-	//	context->VSSetShader(
-	//		m_PyramidvertexShader.Get(),
-	//		nullptr,
-	//		0
-	//	);
-	//
-	//	// Send the constant buffer to the graphics device.
-	//	context->VSSetConstantBuffers1(
-	//		0,
-	//		1,
-	//		m_PyramidconstantBuffer.GetAddressOf(),
-	//		nullptr,
-	//		nullptr
-	//	);
-	//
-	//	// Attach our pixel shader.
-	//	context->PSSetShader(
-	//		m_PyramidpixelShader.Get(),
-	//		nullptr,
-	//		0
-	//	);
-	//
-	//	// Draw the objects.
-	//	//context->DrawIndexed(m_PyramidindexCount, 0, 0);
-	//	context->DrawIndexedInstanced(m_PyramidindexCount, m_PyramidCount, 0, 0, 0);
-	//
-	//#pragma endregion
+#pragma region Draw Pyramid
+
+
+
+	// Prepare the constant buffer to send it to the graphics device.
+	context->UpdateSubresource1(
+		m_PyramidconstantBuffer.Get(),
+		0,
+		NULL,
+		&m_PyramidconstantBufferData,
+		0,
+		0,
+		0
+	);
+
+	// Each vertex is one instance of the VertexPositionColorNormalUV struct.
+	UINT stride = sizeof(VertexPositionColorNormalUV);
+	UINT offset = 0;
+	context->IASetVertexBuffers(
+		0,
+		1,
+		m_PyramidvertexBuffer.GetAddressOf(),
+		&stride,
+		&offset
+	);
+
+	context->IASetIndexBuffer(
+		m_PyramidindexBuffer.Get(),
+		DXGI_FORMAT_R16_UINT, // Each index is one 16-bit unsigned integer (short).
+		0
+	);
+
+	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	context->IASetInputLayout(m_PyramidinputLayout.Get());
+
+	// Attach our vertex shader.
+	context->VSSetShader(
+		m_PyramidvertexShader.Get(),
+		nullptr,
+		0
+	);
+
+	// Send the constant buffer to the graphics device.
+	context->VSSetConstantBuffers1(
+		0,
+		1,
+		m_PyramidconstantBuffer.GetAddressOf(),
+		nullptr,
+		nullptr
+	);
+
+	// Attach our pixel shader.
+	context->PSSetShader(
+		m_PyramidpixelShader.Get(),
+		nullptr,
+		0
+	);
+	
+	context->PSSetShaderResources(2, 1, m_SkyboxTexture.GetAddressOf());
+	context->PSSetSamplers(0, 1, m_CustomMeshSamplerState.GetAddressOf());
+	// Draw the objects.
+	context->DrawIndexed(m_PyramidindexCount, 0, 0);
+
+
+#pragma endregion
 
 #pragma region Draw Custom Mesh
 
 
 
-// Prepare the constant buffer to send it to the graphics device.
+	// Prepare the constant buffer to send it to the graphics device.
 	context->UpdateSubresource1(
 		m_CustomMeshConstantBuffer.Get(),
 		0,
@@ -514,8 +518,8 @@ void Sample3DSceneRenderer::Render()
 	);
 
 	// Each vertex is one instance of the VertexPositionColorNormalUV struct.
-	UINT stride = sizeof(VertexPositionColorNormalUV);
-	UINT offset = 0;
+	stride = sizeof(VertexPositionColorNormalUV);
+	offset = 0;
 	context->IASetVertexBuffers(
 		0,
 		1,
@@ -614,7 +618,7 @@ void Sample3DSceneRenderer::Render()
 	);
 
 	context->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST);
-	
+
 
 	context->IASetInputLayout(m_PlaneInputLayout.Get());
 
@@ -641,7 +645,7 @@ void Sample3DSceneRenderer::Render()
 		0
 	);
 	//Use the CustomMesh b/c this has no texture
-	context->PSSetShaderResources(0, 1, m_CustomMeshShaderResourceView.GetAddressOf());
+	context->PSSetShaderResources(0, 1, m_TerrainShaderResourceView.GetAddressOf());
 	context->PSSetSamplers(0, 1, m_CustomMeshSamplerState.GetAddressOf());
 	context->HSSetShader(m_TerrianHullShader.Get(), nullptr, 0);
 
@@ -770,6 +774,10 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 	// Load shaders asynchronously.
 	auto loadVSTask = DX::ReadDataAsync(L"InstancedVertexShader.cso");
 	auto loadPSTask = DX::ReadDataAsync(L"SamplePixelShader.cso");
+
+	auto loadVSTask3 = DX::ReadDataAsync(L"SkyboxVertexShader.cso");
+	auto loadPSTask3 = DX::ReadDataAsync(L"SkyboxPixelShader.cso");
+
 	auto loadVSTask2 = DX::ReadDataAsync(L"BillboardVertexShader.cso");
 	auto loadPSTask2 = DX::ReadDataAsync(L"BillboardPixelShader.cso");
 	auto loadGSTask = DX::ReadDataAsync(L"BillboardGeometryShader.cso");
@@ -790,31 +798,7 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 		};
 
 
-#pragma region Pyramid
 
-
-
-
-		DX::ThrowIfFailed(
-			m_deviceResources->GetD3DDevice()->CreateVertexShader(
-				&fileData[0],
-				fileData.size(),
-				nullptr,
-				&m_PyramidvertexShader
-			)
-		);
-
-		DX::ThrowIfFailed(
-			m_deviceResources->GetD3DDevice()->CreateInputLayout(
-				vertexDesc,
-				ARRAYSIZE(vertexDesc),
-				&fileData[0],
-				fileData.size(),
-				&m_PyramidinputLayout
-			)
-		);
-
-#pragma endregion
 
 #pragma region Custom Mesh
 		DX::ThrowIfFailed(
@@ -837,6 +821,65 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 		);
 #pragma endregion
 	});
+	auto createVSTask3 = loadVSTask3.then([this](const std::vector<byte>& fileData) {
+#pragma region Pyramid
+
+
+		static const D3D11_INPUT_ELEMENT_DESC vertexDesc[] =
+		{
+			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		};
+
+		DX::ThrowIfFailed(
+			m_deviceResources->GetD3DDevice()->CreateVertexShader(
+				&fileData[0],
+				fileData.size(),
+				nullptr,
+				&m_PyramidvertexShader
+			)
+		);
+
+		DX::ThrowIfFailed(
+			m_deviceResources->GetD3DDevice()->CreateInputLayout(
+				vertexDesc,
+				ARRAYSIZE(vertexDesc),
+				&fileData[0],
+				fileData.size(),
+				&m_PyramidinputLayout
+			)
+		);
+
+#pragma endregion
+	});
+	auto createPSTask3 = loadPSTask3.then([this](const std::vector<byte>& fileData) {
+
+		DX::ThrowIfFailed(
+			m_deviceResources->GetD3DDevice()->CreatePixelShader(
+				&fileData[0],
+				fileData.size(),
+				nullptr,
+				&m_PyramidpixelShader
+			)
+		);
+		CreateDDSTextureFromFile(m_deviceResources->GetD3DDevice(), L"Assets/sunset_sky.dds", nullptr, &m_SkyboxTexture);
+
+#pragma region Pyramid
+
+
+		CD3D11_BUFFER_DESC constantBufferDesc(sizeof(ModelViewProjectionConstantBuffer), D3D11_BIND_CONSTANT_BUFFER);
+		DX::ThrowIfFailed(
+			m_deviceResources->GetD3DDevice()->CreateBuffer(
+				&constantBufferDesc,
+				nullptr,
+				&m_PyramidconstantBuffer
+			)
+		);
+#pragma endregion
+	});
+
 	//Create Geometry shader
 	auto createGSTask = loadGSTask.then([this](const std::vector<byte>& fileData) {
 
@@ -886,6 +929,10 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 			{ "SIZE", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		};
+
+
+
+
 		DX::ThrowIfFailed(
 			m_deviceResources->GetD3DDevice()->CreateVertexShader(
 				&fileData[0],
@@ -1028,25 +1075,7 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 		);
 #pragma endregion
 
-#pragma region Pyramid
-		DX::ThrowIfFailed(
-			m_deviceResources->GetD3DDevice()->CreatePixelShader(
-				&fileData[0],
-				fileData.size(),
-				nullptr,
-				&m_PyramidpixelShader
-			)
-		);
 
-
-		DX::ThrowIfFailed(
-			m_deviceResources->GetD3DDevice()->CreateBuffer(
-				&constantBufferDesc,
-				nullptr,
-				&m_PyramidconstantBuffer
-			)
-		);
-#pragma endregion
 #pragma region Custom Mesh
 		DX::ThrowIfFailed(
 			m_deviceResources->GetD3DDevice()->CreatePixelShader(
@@ -1109,7 +1138,7 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 
 
 	// Once both shaders are loaded, create the mesh.
-	auto createCubeTask = (createPSTask && createVSTask && createGSTask && createPSTask2 && createVSTask2 && createHSTask && createDSTask).then([this]() {
+	auto createCubeTask = (createPSTask && createVSTask && createGSTask && createPSTask2 && createVSTask2 && createHSTask && createDSTask && createPSTask3 && createVSTask3).then([this]() {
 #pragma region Create cube verts
 
 
@@ -1180,12 +1209,16 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 
 		static const VertexPositionColorNormalUV pyramidVerts[] =
 		{
-			{ XMFLOAT3(-0.5f, 0.5f, -0.5f), XMFLOAT3(1.0f, 1.0f, 0.5f) },
-			{ XMFLOAT3(0.5f, 0.5f, -0.5f), XMFLOAT3(1.0f, 1.0f, 0.5f) },
-			{ XMFLOAT3(0.5f, 0.5f, 0.5f), XMFLOAT3(1.0f, 1.0f, 0.5f) },
-			{ XMFLOAT3(-0.5f, 0.5f, 0.5f), XMFLOAT3(1.0f, 1.0f, 0.5f) },
-			{ XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT3(1.0f, 0.0f, 0.0f) },
 
+
+			{ XMFLOAT3(-50.0f, -50.0f, -50.0f), XMFLOAT3(0.0f, 0.0f, 0.0f) },
+			{ XMFLOAT3(-50.0f, -50.0f,  50.0f), XMFLOAT3(0.0f, 0.0f, 1.0f) },
+			{ XMFLOAT3(-50.0f,  50.0f, -50.0f), XMFLOAT3(0.0f, 1.0f, 0.0f) },
+			{ XMFLOAT3(-50.0f,  50.0f,  50.0f), XMFLOAT3(0.0f, 1.0f, 1.0f) },
+			{ XMFLOAT3(50.0f, -50.0f, -50.0f), XMFLOAT3(1.0f, 0.0f, 0.0f) },
+			{ XMFLOAT3(50.0f, -50.0f,  50.0f), XMFLOAT3(1.0f, 0.0f, 1.0f) },
+			{ XMFLOAT3(50.0f,  50.0f, -50.0f), XMFLOAT3(1.0f, 1.0f, 0.0f) },
+			{ XMFLOAT3(50.0f,  50.0f,  50.0f), XMFLOAT3(1.0f, 1.0f, 1.0f) },
 
 		};
 
@@ -1205,20 +1238,23 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 		static const unsigned short pyramidIndices[] =
 		{
 			//Bottom face
-			2,1,0,
-			0,3,2,
+			1,2,0, // -x
+			3,2,1,
 
-			//+z
-			3,4,2,
+			6,5,4, // +x
+			6,7,5,
 
-			//-z
-			1,4,0,
+			5,1,0, // -y
+			4,5,0,
 
-			//+x
-			2,4,1,
+			7,6,2, // +y
+			3,7,2,
 
-			//-x
-			0,4,3,
+			6,4,0, // -z
+			2,6,0,
+
+			7,3,1, // +z
+			5,7,1
 
 		};
 

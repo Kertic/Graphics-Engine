@@ -24,7 +24,7 @@ void BillboardShader(point GeoShaderInput points[1] : SV_POSITION, inout Triangl
 
 
 
-	float3 startPos = float3(points[0].pos.xyz);
+    float3 startPos = float3(mul(model[0], points[0].pos).xyz);
 
 	//Now we build billboard pieces
 	float3 up = float3(0.0f, 1.0f, 0.0f);
@@ -49,7 +49,7 @@ void BillboardShader(point GeoShaderInput points[1] : SV_POSITION, inout Triangl
 
 
 
-	float4x4 viewProj = mul(view, projection);
+    float4x4 viewProj = mul(view, projection);
 	for (uint i = 0; i < 4; ++i) {
 		verts[i].pos = mul(verts[i].pos, viewProj);
 	}

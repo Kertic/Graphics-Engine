@@ -10,6 +10,7 @@ namespace App2
 		DirectX::XMFLOAT4X4 projection;
 		DirectX::XMFLOAT4 cameraPosition;
 	};
+	
 
 	// Used to send per-vertex data to the vertex shader.
 	struct VertexPositionColorNormalUV
@@ -32,5 +33,17 @@ namespace App2
 		DirectX::XMFLOAT4 CloudStartPosition;
 		DirectX::XMFLOAT2 XandYScale;
 		DirectX::XMFLOAT2 UV;
+	};
+
+	struct HullShaderData
+	{
+		DirectX::XMUINT2 detailLevel;
+		DirectX::XMUINT2 padding;
+	};
+	struct DomainShaderData
+	{
+		DirectX::XMFLOAT4X4 model;
+		DirectX::XMFLOAT4X4 view;
+		DirectX::XMFLOAT4X4 proj;
 	};
 }

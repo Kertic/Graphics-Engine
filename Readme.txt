@@ -11,3 +11,7 @@ Press 6 to reset the light offset
 (For the Spotlight, the position and direction does change but they both move on the same offset,
  so check code for proof if its hard to tell (ctrl+f Update Lights))
 
+Hold 7 to increase level of detail
+Hold 8 to decrease level of detail
+Press 9 to enable Filled view
+Press 0 to enable wireframe view

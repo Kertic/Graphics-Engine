@@ -17,7 +17,7 @@ float4 main(PixelShaderInput input) : SV_TARGET
 {
 	float lightRatio;
 float3 LightDir;
-float4 baseColor = float4( baseTexture.Sample(filter, input.texcoord).xyzw);
+float4 baseColor = float4( baseTexture.Sample(filter, input.texcoord));
 
 
 	return float4(baseColor);

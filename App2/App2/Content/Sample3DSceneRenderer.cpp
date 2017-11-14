@@ -103,13 +103,13 @@ void Sample3DSceneRenderer::CreateWindowSizeDependentResources()
 	m_eye = eye;
 	m_at = at;
 	m_up = up;
-	
+
 	XMStoreFloat4x4(&camera, XMMatrixLookAtLH(eye, at, up));
 	XMStoreFloat4x4(&m_PlaneConstantBufferData.view, XMMatrixTranspose(XMMatrixInverse(0, XMMatrixLookAtLH(eye, at, up))));
 	XMStoreFloat4x4(&m_CustomMeshConstantBufferData.view, XMMatrixTranspose(XMMatrixInverse(0, XMMatrixLookAtLH(eye, at, up))));
 	XMStoreFloat4x4(&m_PyramidconstantBufferData.view, XMMatrixTranspose(XMMatrixInverse(0, XMMatrixLookAtLH(eye, at, up))));
+	m_TerrainConstantBufferData.detailLevel = XMUINT2(1, 0);
 
-	
 	XMMATRIX newcamera = XMLoadFloat4x4(&camera);
 	XMMATRIX tempCam = XMMatrixInverse(0, newcamera);
 	XMVECTOR pos;// = newcamera.r[3];
@@ -170,6 +170,47 @@ void Sample3DSceneRenderer::Update(DX::StepTimer const& timer)
 	if (buttons['6']) {
 		light_DynamicOffset = 0.0f;
 	}
+	if (buttons['7']) {
+		LevelOfDetail++;
+		if (LevelOfDetail > 64)
+			LevelOfDetail = 64;
+	}
+	if (buttons['8']) {
+		LevelOfDetail--;
+		if (LevelOfDetail < 1)
+			LevelOfDetail = 1;
+	}
+	if (buttons['9']) {
+		D3D11_RASTERIZER_DESC rasterDesc;
+		rasterDesc.AntialiasedLineEnable = false;
+		rasterDesc.CullMode = D3D11_CULL_BACK;
+		rasterDesc.DepthBias = 0;
+		rasterDesc.DepthBiasClamp = 0.0f;
+		rasterDesc.DepthClipEnable = true;
+		rasterDesc.FillMode = D3D11_FILL_SOLID;
+		rasterDesc.FrontCounterClockwise = false;
+		rasterDesc.MultisampleEnable = false;
+		rasterDesc.ScissorEnable = false;
+		rasterDesc.SlopeScaledDepthBias = 0.0f;
+		m_deviceResources->GetD3DDevice()->CreateRasterizerState(&rasterDesc, m_RasterizerState.GetAddressOf());
+		m_deviceResources->GetD3DDeviceContext()->RSSetState(m_RasterizerState.Get());
+	}
+	if (buttons['0']) {
+		D3D11_RASTERIZER_DESC rasterDesc;
+		rasterDesc.AntialiasedLineEnable = false;
+		rasterDesc.CullMode = D3D11_CULL_BACK;
+		rasterDesc.DepthBias = 0;
+		rasterDesc.DepthBiasClamp = 0.0f;
+		rasterDesc.DepthClipEnable = true;
+		rasterDesc.FillMode = D3D11_FILL_WIREFRAME;
+		rasterDesc.FrontCounterClockwise = false;
+		rasterDesc.MultisampleEnable = false;
+		rasterDesc.ScissorEnable = false;
+		rasterDesc.SlopeScaledDepthBias = 0.0f;
+		m_deviceResources->GetD3DDevice()->CreateRasterizerState(&rasterDesc, m_RasterizerState.GetAddressOf());
+		m_deviceResources->GetD3DDeviceContext()->RSSetState(m_RasterizerState.Get());
+	}
+	m_TerrainConstantBufferData.detailLevel = XMUINT2(LevelOfDetail, 0);
 
 	Windows::UI::Input::PointerPoint^ point = nullptr;
 
@@ -216,15 +257,17 @@ void Sample3DSceneRenderer::Update(DX::StepTimer const& timer)
 	XMStoreFloat4x4(&m_PlaneConstantBufferData.view, XMMatrixTranspose(XMMatrixInverse(0, newcamera)));
 	XMStoreFloat4x4(&m_PyramidconstantBufferData.view, XMMatrixTranspose(XMMatrixInverse(0, newcamera)));
 	XMStoreFloat4x4(&m_CustomMeshConstantBufferData.view, XMMatrixTranspose(XMMatrixInverse(0, newcamera)));
-
+	m_TerrainDomainShaderConstantBufferData.model = m_PlaneConstantBufferData.model[0];
+	m_TerrainDomainShaderConstantBufferData.view = m_PlaneConstantBufferData.view;
+	m_TerrainDomainShaderConstantBufferData.proj = m_PlaneConstantBufferData.projection;
 
 
 	XMVECTOR pos;// = newcamera.r[3];
 	XMVECTOR rot;
 	XMVECTOR scale;
-	XMMatrixDecompose(&scale, &rot, &pos,  newcamera);
+	XMMatrixDecompose(&scale, &rot, &pos, newcamera);
 
-	
+
 	XMStoreFloat4(&m_PlaneConstantBufferData.cameraPosition, pos);
 	XMStoreFloat4(&m_PyramidconstantBufferData.cameraPosition, pos);
 	XMStoreFloat4(&m_CustomMeshConstantBufferData.cameraPosition, pos);
@@ -238,8 +281,8 @@ void Sample3DSceneRenderer::UpdateCamera(DX::StepTimer const& timer, float const
 	if (buttons['W'])
 	{
 		XMMATRIX translation = XMMatrixTranslation(0.0f, 0.0f, -moveSpd * delta_time);
-		
-		
+
+
 		XMMATRIX temp_camera = XMLoadFloat4x4(&camera);
 		XMMATRIX result = XMMatrixMultiply(translation, temp_camera);
 		XMStoreFloat4x4(&camera, result);
@@ -247,7 +290,7 @@ void Sample3DSceneRenderer::UpdateCamera(DX::StepTimer const& timer, float const
 	if (buttons['S'])
 	{
 		XMMATRIX translation = XMMatrixTranslation(0.0f, 0.0f, moveSpd * delta_time);
-	
+
 		XMMATRIX temp_camera = XMLoadFloat4x4(&camera);
 		XMMATRIX result = XMMatrixMultiply(translation, temp_camera);
 		XMStoreFloat4x4(&camera, result);
@@ -255,7 +298,7 @@ void Sample3DSceneRenderer::UpdateCamera(DX::StepTimer const& timer, float const
 	if (buttons['A'])
 	{
 		XMMATRIX translation = XMMatrixTranslation(-moveSpd * delta_time, 0.0f, 0.0f);
-		
+
 		XMMATRIX temp_camera = XMLoadFloat4x4(&camera);
 		XMMATRIX result = XMMatrixMultiply(translation, temp_camera);
 		XMStoreFloat4x4(&camera, result);
@@ -263,7 +306,7 @@ void Sample3DSceneRenderer::UpdateCamera(DX::StepTimer const& timer, float const
 	if (buttons['D'])
 	{
 		XMMATRIX translation = XMMatrixTranslation(moveSpd * delta_time, 0.0f, 0.0f);
-		
+
 		XMMATRIX temp_camera = XMLoadFloat4x4(&camera);
 		XMMATRIX result = XMMatrixMultiply(translation, temp_camera);
 		XMStoreFloat4x4(&camera, result);
@@ -271,7 +314,7 @@ void Sample3DSceneRenderer::UpdateCamera(DX::StepTimer const& timer, float const
 	if (buttons['X'])
 	{
 		XMMATRIX translation = XMMatrixTranslation(0.0f, -moveSpd * delta_time, 0.0f);
-	
+
 		XMMATRIX temp_camera = XMLoadFloat4x4(&camera);
 		XMMATRIX result = XMMatrixMultiply(translation, temp_camera);
 		XMStoreFloat4x4(&camera, result);
@@ -279,7 +322,7 @@ void Sample3DSceneRenderer::UpdateCamera(DX::StepTimer const& timer, float const
 	if (buttons[VK_SPACE])
 	{
 		XMMATRIX translation = XMMatrixTranslation(0.0f, moveSpd * delta_time, 0.0f);
-		
+
 		XMMATRIX temp_camera = XMLoadFloat4x4(&camera);
 		XMMATRIX result = XMMatrixMultiply(translation, temp_camera);
 		XMStoreFloat4x4(&camera, result);
@@ -389,75 +432,7 @@ void Sample3DSceneRenderer::Render()
 	auto context = m_deviceResources->GetD3DDeviceContext();
 
 
-#pragma region Draw Plane
 
-
-
-	// Prepare the constant buffer to send it to the graphics device.
-	context->UpdateSubresource1(
-		m_PlaneConstantBuffer.Get(),
-		0,
-		NULL,
-		&m_PlaneConstantBufferData,
-		0,
-		0,
-		0
-	);
-
-	// Each vertex is one instance of the VertexPositionColorNormalUV struct.
-	UINT stride = sizeof(VertexPositionColorNormalUV);
-	UINT offset = 0;
-	context->IASetVertexBuffers(
-		0,
-		1,
-		m_PlaneVertexBuffer.GetAddressOf(),
-		&stride,
-		&offset
-	);
-
-	context->IASetIndexBuffer(
-		m_PlaneIndexBuffer.Get(),
-		DXGI_FORMAT_R16_UINT, // Each index is one 16-bit unsigned integer (short).
-		0
-	);
-
-	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-	context->IASetInputLayout(m_PlaneInputLayout.Get());
-
-	// Attach our vertex shader.
-	context->VSSetShader(
-		m_PlaneVertexShader.Get(),
-		nullptr,
-		0
-	);
-
-	// Send the constant buffer to the graphics device.
-	context->VSSetConstantBuffers1(
-		0,
-		1,
-		m_PlaneConstantBuffer.GetAddressOf(),
-		nullptr,
-		nullptr
-	);
-
-	// Attach our pixel shader.
-	context->PSSetShader(
-		m_PlanePixelShader.Get(),
-		nullptr,
-		0
-	);
-	//Use the CustomMesh b/c this has no texture
-	context->PSSetShaderResources(0, 1, m_CustomMeshShaderResourceView.GetAddressOf());
-	context->PSSetSamplers(0, 1, m_CustomMeshSamplerState.GetAddressOf());
-	// Draw the objects.
-	context->DrawIndexed(
-		m_PlaneIndexCount,
-		0,
-		0
-	);
-
-#pragma endregion
 	//#pragma region Draw Pyramid
 	//
 	//
@@ -539,8 +514,8 @@ void Sample3DSceneRenderer::Render()
 	);
 
 	// Each vertex is one instance of the VertexPositionColorNormalUV struct.
-	stride = sizeof(VertexPositionColorNormalUV);
-	offset = 0;
+	UINT stride = sizeof(VertexPositionColorNormalUV);
+	UINT offset = 0;
 	context->IASetVertexBuffers(
 		0,
 		1,
@@ -588,7 +563,114 @@ void Sample3DSceneRenderer::Render()
 	context->DrawIndexedInstanced(m_CustomMeshIndexCount, MAX_INSTANCES_OF_GEOMETRY, 0, 0, 0);
 
 #pragma endregion
+#pragma region Draw Plane
 
+
+
+	// Prepare the constant buffer to send it to the graphics device.
+	context->UpdateSubresource1(
+		m_PlaneConstantBuffer.Get(),
+		0,
+		NULL,
+		&m_PlaneConstantBufferData,
+		0,
+		0,
+		0
+	);
+	context->UpdateSubresource1(
+		m_TerrainHullShaderConstantBuffer.Get(),
+		0,
+		NULL,
+		&m_TerrainConstantBufferData,
+		0,
+		0,
+		0
+	);
+	context->UpdateSubresource1(
+		m_TerrainDomainShaderConstantBuffer.Get(),
+		0,
+		NULL,
+		&m_TerrainDomainShaderConstantBufferData,
+		0,
+		0,
+		0
+	);
+
+	// Each vertex is one instance of the VertexPositionColorNormalUV struct.
+	stride = sizeof(VertexPositionColorNormalUV);
+	offset = 0;
+	context->IASetVertexBuffers(
+		0,
+		1,
+		m_PlaneVertexBuffer.GetAddressOf(),
+		&stride,
+		&offset
+	);
+
+	context->IASetIndexBuffer(
+		m_PlaneIndexBuffer.Get(),
+		DXGI_FORMAT_R16_UINT, // Each index is one 16-bit unsigned integer (short).
+		0
+	);
+
+	context->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST);
+
+	context->IASetInputLayout(m_PlaneInputLayout.Get());
+
+	// Attach our vertex shader.
+	context->VSSetShader(
+		m_BillboardVertexShader.Get(),
+		nullptr,
+		0
+	);
+
+	// Send the constant buffer to the graphics device.
+	context->VSSetConstantBuffers1(
+		0,
+		1,
+		m_PlaneConstantBuffer.GetAddressOf(),
+		nullptr,
+		nullptr
+	);
+
+	// Attach our pixel shader.
+	context->PSSetShader(
+		m_BillboardPixelShader.Get(),
+		nullptr,
+		0
+	);
+	//Use the CustomMesh b/c this has no texture
+	context->PSSetShaderResources(0, 1, m_CustomMeshShaderResourceView.GetAddressOf());
+	context->PSSetSamplers(0, 1, m_CustomMeshSamplerState.GetAddressOf());
+	context->HSSetShader(m_TerrianHullShader.Get(), nullptr, 0);
+
+	context->HSSetConstantBuffers1(
+		0,
+		1,
+		m_TerrainHullShaderConstantBuffer.GetAddressOf(),
+		nullptr,
+		nullptr
+	);
+	context->HSSetConstantBuffers1(
+		1,
+		1,
+		m_TerrainDomainShaderConstantBuffer.GetAddressOf(),
+		nullptr,
+		nullptr
+	);
+	context->DSSetShader(m_TerrianDomainShader.Get(), nullptr, 0);
+	context->DSSetShaderResources(0, 1, m_TerrainShaderResourceView.GetAddressOf());
+
+
+	// Draw the objects.
+	context->DrawIndexed(
+		m_PlaneIndexCount,
+		0,
+		0
+	);
+	context->HSSetShader(0, nullptr, 0);
+	context->DSSetShader(0, nullptr, 0);
+#pragma endregion
 #pragma region Draw Clouds
 	// Prepare the constant buffer to send it to the graphics device.
 	// We just use custom mesh constant buffer because we don't use the model information and the remaining info would be the same
@@ -662,6 +744,7 @@ void Sample3DSceneRenderer::Render()
 #pragma endregion
 
 
+
 	CD3D11_BUFFER_DESC LightConstantBufferDesc(sizeof(LightNormalColorPositionType), D3D11_BIND_CONSTANT_BUFFER);
 	//Change this dynamically based on current light
 	if (currentLight == DIRECTIONAL_LIGHTING) {
@@ -690,6 +773,9 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 	auto loadPSTask2 = DX::ReadDataAsync(L"BillboardPixelShader.cso");
 	auto loadGSTask = DX::ReadDataAsync(L"BillboardGeometryShader.cso");
 
+	auto loadHSTask = DX::ReadDataAsync(L"TerrainHullShader.cso");
+	auto loadDSTask = DX::ReadDataAsync(L"TerrainDomainShader.cso");
+
 	// After the vertex shader file is loaded, create the shader and input layout.
 	auto createVSTask = loadVSTask.then([this](const std::vector<byte>& fileData) {
 
@@ -701,31 +787,7 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 			{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		};
-#pragma region Cube
 
-		
-
-		DX::ThrowIfFailed(
-			m_deviceResources->GetD3DDevice()->CreateVertexShader(
-				&fileData[0],
-				fileData.size(),
-				nullptr,
-				&m_PlaneVertexShader
-			)
-		);
-
-
-
-		DX::ThrowIfFailed(
-			m_deviceResources->GetD3DDevice()->CreateInputLayout(
-				vertexDesc,
-				ARRAYSIZE(vertexDesc),
-				&fileData[0],
-				fileData.size(),
-				&m_PlaneInputLayout
-			)
-		);
-#pragma endregion
 
 #pragma region Pyramid
 
@@ -815,8 +877,8 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 
 	});
 	auto createVSTask2 = loadVSTask2.then([this](const std::vector<byte>& fileData) {
-		
-		
+
+
 		static const D3D11_INPUT_ELEMENT_DESC geometryBufferDesc[] =
 		{
 			{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
@@ -840,6 +902,32 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 				&m_CloudInputLayout
 			)
 		);
+
+#pragma region Cube
+
+
+
+		DX::ThrowIfFailed(
+			m_deviceResources->GetD3DDevice()->CreateVertexShader(
+				&fileData[0],
+				fileData.size(),
+				nullptr,
+				&m_PlaneVertexShader
+			)
+		);
+
+
+
+		DX::ThrowIfFailed(
+			m_deviceResources->GetD3DDevice()->CreateInputLayout(
+				geometryBufferDesc,
+				ARRAYSIZE(geometryBufferDesc),
+				&fileData[0],
+				fileData.size(),
+				&m_PlaneInputLayout
+			)
+		);
+#pragma endregion
 
 
 	});
@@ -880,6 +968,7 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 		);
 
 		CreateDDSTextureFromFile(m_deviceResources->GetD3DDevice(), L"Assets/Cloud1.dds", nullptr, &m_CloudShaderResourceView);
+		CreateDDSTextureFromFile(m_deviceResources->GetD3DDevice(), L"Assets/Terrain map.dds", nullptr, &m_TerrainShaderResourceView);
 
 	});
 	// After the pixel shader file is loaded, create the shader and constant buffer.
@@ -910,7 +999,7 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 		samplerDesc.BorderColor[1] = 0.0f;
 		samplerDesc.BorderColor[2] = 0.0f;
 		samplerDesc.BorderColor[3] = 0.0f;
-		
+
 		DX::ThrowIfFailed(
 			m_deviceResources->GetD3DDevice()->CreateSamplerState(
 				&samplerDesc,
@@ -979,11 +1068,47 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 		CreateDDSTextureFromFile(m_deviceResources->GetD3DDevice(), L"Assets/rock.dds", nullptr, &m_CustomMeshShaderResourceView);
 #pragma endregion
 	});
+	auto createHSTask = loadHSTask.then([this](const std::vector<byte>& fileData) {
+		DX::ThrowIfFailed(
+			m_deviceResources->GetD3DDevice()->CreateHullShader(
+				&fileData[0],
+				fileData.size(),
+				nullptr,
+				&m_TerrianHullShader
+			)
+		);
+		CD3D11_BUFFER_DESC hullShaderBufferDesc(sizeof(HullShaderData), D3D11_BIND_CONSTANT_BUFFER);
+		DX::ThrowIfFailed(
+			m_deviceResources->GetD3DDevice()->CreateBuffer(
+				&hullShaderBufferDesc,
+				nullptr,
+				&m_TerrainHullShaderConstantBuffer
+			)
+		);
+	});
+	auto createDSTask = loadDSTask.then([this](const std::vector<byte>& fileData) {
+		DX::ThrowIfFailed(
+			m_deviceResources->GetD3DDevice()->CreateDomainShader(
+				&fileData[0],
+				fileData.size(),
+				nullptr,
+				&m_TerrianDomainShader
+			)
+		);
 
+		CD3D11_BUFFER_DESC DomainShaderBufferDesc(sizeof(DomainShaderData), D3D11_BIND_CONSTANT_BUFFER);
+		DX::ThrowIfFailed(
+			m_deviceResources->GetD3DDevice()->CreateBuffer(
+				&DomainShaderBufferDesc,
+				nullptr,
+				&m_TerrainDomainShaderConstantBuffer
+			)
+		);
+	});
 
 
 	// Once both shaders are loaded, create the mesh.
-	auto createCubeTask = (createPSTask && createVSTask && createGSTask && createPSTask2 && createVSTask2).then([this]() {
+	auto createCubeTask = (createPSTask && createVSTask && createGSTask && createPSTask2 && createVSTask2 && createHSTask && createDSTask).then([this]() {
 #pragma region Create cube verts
 
 
@@ -992,10 +1117,10 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 		static const VertexPositionColorNormalUV cubeVertices[] =
 		{
 
-			{ XMFLOAT3(-5.0f, -2.0f,  -5.0f), XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f) },
-			{ XMFLOAT3(-5.0f, -2.0f,  5.0f), XMFLOAT3(0.0f, 1.0f, 1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f) },
-			{ XMFLOAT3(5.0f,  -2.0f,  -5.0f), XMFLOAT3(1.0f, 0.0f, 1.0f) , XMFLOAT3(0.0f, 1.0f, 0.0f) },
-			{ XMFLOAT3(5.0f,  -2.0f,  5.0f), XMFLOAT3(1.0f, 1.0f, 1.0f) , XMFLOAT3(0.0f, 1.0f, 0.0f) },
+			{ XMFLOAT3(-5.0f, -2.0f,  -5.0f), XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(0.0f, 0.0f) },
+			{ XMFLOAT3(-5.0f, -2.0f,  5.0f), XMFLOAT3(0.0f, 1.0f, 1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(0.0f, 1.0f) },
+			{ XMFLOAT3(5.0f,  -2.0f,  -5.0f), XMFLOAT3(1.0f, 0.0f, 1.0f) , XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(1.0f, 0.0f) },
+			{ XMFLOAT3(5.0f,  -2.0f,  5.0f), XMFLOAT3(1.0f, 1.0f, 1.0f) , XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(1.0f, 1.0f) },
 		};
 
 
@@ -1147,7 +1272,7 @@ void Sample3DSceneRenderer::CreateCustomMesh()
 #ifdef _TRANSLATEMODELS
 		MeshVerts[MeshVerts.size() - 1].pos.x += 0.5f;
 #endif
-		}
+	}
 	MeshVerts.shrink_to_fit();
 	for (unsigned int i = 0; i < testMesh.TrianglePointIndexes.size(); i++)
 	{
@@ -1185,7 +1310,7 @@ void Sample3DSceneRenderer::CreateCustomMesh()
 		)
 	);
 #pragma endregion
-	}
+}
 
 void Sample3DSceneRenderer::ReleaseDeviceDependentResources()
 {

@@ -81,6 +81,7 @@
     <ClInclude Include="Content\DDSTextureLoader.h">
       <Filter>Content</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Assets\StoreLogo.png">
@@ -98,6 +99,9 @@
     <Image Include="Assets\Cloud2.dds">
       <Filter>Assets</Filter>
     </Image>
+    <Image Include="Assets\Terrain map.dds">
+      <Filter>Assets</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest" />
@@ -105,6 +109,7 @@
   <ItemGroup>
     <None Include="App2_TemporaryKey.pfx" />
     <None Include="Assets\test pyramid.obj" />
+    <None Include="Assets\asteroid.obj" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Content\InstancedVertexShader.hlsl">
@@ -119,10 +124,14 @@
     <FxCompile Include="Content\BillboardVertexShader.hlsl">
       <Filter>Content</Filter>
     </FxCompile>
+    <FxCompile Include="Content\TerrainDomainShader.hlsl">
+      <Filter>Content</Filter>
+    </FxCompile>
+    <FxCompile Include="Content\TerrainHullShader.hlsl">
+      <Filter>Content</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <Object Include="Assets\asteroid.obj">
-      <Filter>Assets</Filter>
-    </Object>
+    <ResourceCompile Include="App2.rc" />
   </ItemGroup>
 </Project>

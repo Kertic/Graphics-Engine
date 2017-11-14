@@ -34,7 +34,8 @@ namespace App2
 	private:
 		// Cached pointer to device resources.
 		std::shared_ptr<DX::DeviceResources> m_deviceResources;
-
+		Microsoft::WRL::ComPtr<ID3D11RasterizerState> m_RasterizerState;
+		
 		// Direct3D resources for cube geometry.
 		Microsoft::WRL::ComPtr<ID3D11InputLayout>	m_PlaneInputLayout;
 		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_PlaneVertexBuffer;
@@ -74,6 +75,16 @@ namespace App2
 		Microsoft::WRL::ComPtr<ID3D11SamplerState>	m_CloudSamplerState;
 		static const unsigned int m_CloudCount = 1;
 		PositionScalerUV m_CloudPoints;
+
+		//Resources for tessellated terrain
+		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_TerrainShaderResourceView;
+		Microsoft::WRL::ComPtr<ID3D11HullShader> m_TerrianHullShader;
+		Microsoft::WRL::ComPtr<ID3D11DomainShader> m_TerrianDomainShader;
+		unsigned int LevelOfDetail = 1;
+		Microsoft::WRL::ComPtr<ID3D11Buffer> m_TerrainHullShaderConstantBuffer;
+		Microsoft::WRL::ComPtr<ID3D11Buffer> m_TerrainDomainShaderConstantBuffer;
+		HullShaderData m_TerrainConstantBufferData;
+		DomainShaderData m_TerrainDomainShaderConstantBufferData;
 
 
 		// System resources for cube geometry.

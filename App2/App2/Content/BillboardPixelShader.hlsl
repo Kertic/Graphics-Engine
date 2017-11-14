@@ -19,6 +19,9 @@ float4 main(PixelShaderInput input) : SV_TARGET
 
     float4 baseColor = float4(baseTexture.Sample(filter, input.texcoord));
     float4 multiColor = float4(multiTex.Sample(filter, input.texcoord));
+    multiColor = multiColor * baseColor * multiColor.w;
+    if (baseColor.w < 0.75f)
+        discard;
     if (multiColor.w != 0.0f)
         baseColor = multiColor;
     if (baseColor.w < 0.75f)

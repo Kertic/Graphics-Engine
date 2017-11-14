@@ -19,3 +19,6 @@ Press 0 to enable wireframe view
 
 Press J to change the floor texture to the height map
 Press K to change the floor texture to a rocky texture
+
+
+Check the BillboardPixelShader for proof of multi-texturing, it has the face be textured over the original texture

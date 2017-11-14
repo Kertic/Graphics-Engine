@@ -597,7 +597,7 @@ void Sample3DSceneRenderer::Render()
 	);
 
 	// Each vertex is one instance of the VertexPositionColorNormalUV struct.
-	stride = sizeof(VertexPositionColorNormalUV);
+	stride = sizeof(PositionScalerUV);
 	offset = 0;
 	context->IASetVertexBuffers(
 		0,
@@ -614,6 +614,7 @@ void Sample3DSceneRenderer::Render()
 	);
 
 	context->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST);
+	
 
 	context->IASetInputLayout(m_PlaneInputLayout.Get());
 
@@ -660,7 +661,7 @@ void Sample3DSceneRenderer::Render()
 	);
 	context->DSSetShader(m_TerrianDomainShader.Get(), nullptr, 0);
 	context->DSSetShaderResources(0, 1, m_TerrainShaderResourceView.GetAddressOf());
-
+	context->DSSetSamplers(0, 1, m_CustomMeshSamplerState.GetAddressOf());
 
 	// Draw the objects.
 	context->DrawIndexed(
@@ -1114,13 +1115,13 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 
 
 		// Load mesh vertices. Each vertex has a position and a color.
-		static const VertexPositionColorNormalUV cubeVertices[] =
+		static const PositionScalerUV cubeVertices[] =
 		{
 
-			{ XMFLOAT3(-5.0f, -2.0f,  -5.0f), XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(0.0f, 0.0f) },
-			{ XMFLOAT3(-5.0f, -2.0f,  5.0f), XMFLOAT3(0.0f, 1.0f, 1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(0.0f, 1.0f) },
-			{ XMFLOAT3(5.0f,  -2.0f,  -5.0f), XMFLOAT3(1.0f, 0.0f, 1.0f) , XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(1.0f, 0.0f) },
-			{ XMFLOAT3(5.0f,  -2.0f,  5.0f), XMFLOAT3(1.0f, 1.0f, 1.0f) , XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(1.0f, 1.0f) },
+			{ XMFLOAT4(-5.0f, -2.0f,  -5.0f, 1.0f),	XMFLOAT2(1.0f, 1.0f), XMFLOAT2(0.1f, 0.1f) },
+			{ XMFLOAT4(-5.0f, -2.0f,  5.0f, 1.0f),	XMFLOAT2(1.0f, 1.0f), XMFLOAT2(0.1f, 1.0f) },
+			{ XMFLOAT4(5.0f,  -2.0f,  -5.0f, 1.0f),	XMFLOAT2(1.0f, 1.0f), XMFLOAT2(1.0f, 0.1f) },
+			{ XMFLOAT4(5.0f,  -2.0f,  5.0f, 1.0f),	XMFLOAT2(1.0f, 1.0f), XMFLOAT2(1.0f, 1.0f) },
 		};
 
 

@@ -31,14 +31,14 @@ struct GeoShaderInput
 
 
 // Simple shader to do vertex processing on the GPU.
-GeoShaderInput main(VertexShaderInput input, uint instanceID : SV_InstanceID)
+GeoShaderInput main(VertexShaderInput input)
 {
 	GeoShaderInput output;
-	float4 pos = input.pos;
+
 	
 	
 	// Set the output's position to the incoming position
-	output.pos = pos;
+	output.pos = input.pos;
 	output.camPosition = cameraPos;
 	output.size = input.size;
 	output.texcoord = input.uv;

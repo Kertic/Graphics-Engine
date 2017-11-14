@@ -1,6 +1,6 @@
 
 texture2D baseTexture : register(t0);
-
+SamplerState filter : register(s0);
 
 // Output patch constant data.(One for each patch)
 struct HS_CONSTANT_DATA_OUTPUT
@@ -46,21 +46,23 @@ DS_OUTPUT main(
 
     DS_OUTPUT Output;
 
+    //Interpolate the UV's based on the domain ratios
     Output.texcoord = float2(patch[0].texcoord * domain.x + patch[1].texcoord * domain.y + patch[2].texcoord * domain.z);
-	// domain location used to manually interpolate newly created geometry across overall triangle
-	//The y location is generated from the texture slot's information
-    uint3 sampleCoord = uint3(Output.texcoord.x, Output.texcoord.y, 0);
-    float4 height = baseTexture.Load(sampleCoord); //We use y later on because, no matter what the format for colors is, the 2nd channel will always be a color and never alpha (and our height map is black and white)
-    Output.pos = float4(
-		patch[0].pos.xyz * domain.x + patch[1].pos.xyz * (domain.y + (height.y * 5.0f)) + patch[2].pos.xyz * domain.z, 1);
-	// same deal for color data...
+    //Interpolate the positions based on the domain ratios
+    Output.pos = float4(patch[0].pos.xyz * domain.x + patch[1].pos.xyz * domain.y + patch[2].pos.xyz * domain.z, 1);
+	
 
-	// Prepare adjusted outgoing vertex for rasterization 
+    float4 height = baseTexture.SampleLevel(filter, Output.texcoord, 0); //We use y later on because, no matter what the format for colors is, the 2nd channel will always be a color and never alpha (and our height map is black and white)
+   
+    
+    //Set the height based on one of the color channels, but they're all B/W so any color channel would work
+    Output.pos.y = height.y * 5.0f;
 
-    matrix tempView = patch[0].view;
-    matrix tempProj = patch[0].proj;
-    Output.pos = mul(Output.pos, tempView);
-    Output.pos = mul(Output.pos, tempProj);
+
+ 
+    Output.pos = mul(Output.pos, patch[0].model);
+    Output.pos = mul(Output.pos, patch[0].view);
+    Output.pos = mul(Output.pos, patch[0].proj);
 
     Output.camPosition = patch[0].camPosition;
     Output.size = patch[0].size;

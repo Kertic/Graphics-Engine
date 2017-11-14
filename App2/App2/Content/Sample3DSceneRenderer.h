@@ -33,8 +33,8 @@ namespace App2
 
 	private:
 		// Cached pointer to device resources.
-		std::shared_ptr<DX::DeviceResources> m_deviceResources;
-		Microsoft::WRL::ComPtr<ID3D11RasterizerState> m_RasterizerState;
+		std::shared_ptr<DX::DeviceResources>		m_deviceResources;
+	Microsoft::WRL::ComPtr<ID3D11RasterizerState>	m_RasterizerState;
 		
 		// Direct3D resources for cube geometry.
 		Microsoft::WRL::ComPtr<ID3D11InputLayout>	m_PlaneInputLayout;
@@ -58,7 +58,7 @@ namespace App2
 		Microsoft::WRL::ComPtr<ID3D11PixelShader>	m_PyramidpixelShader;
 		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_PyramidconstantBuffer;
 		static const unsigned int m_PyramidCount = MAX_INSTANCES_OF_GEOMETRY;
-		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_SkyboxTexture;
+Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>	m_SkyboxTexture;
 
 		Microsoft::WRL::ComPtr<ID3D11InputLayout>	m_CustomMeshInputLayout;
 		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_CustomMeshVertexBuffer;
@@ -67,7 +67,7 @@ namespace App2
 		Microsoft::WRL::ComPtr<ID3D11PixelShader>	m_CustomMeshPixelShader;
 		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_CustomMeshConstantBuffer;
 		//Microsoft::WRL::ComPtr<ID3D11Texture2D>		m_CustomMeshResource;
-		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_CustomMeshShaderResourceView;
+Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>	m_CustomMeshShaderResourceView;
 		Microsoft::WRL::ComPtr<ID3D11SamplerState>	m_CustomMeshSamplerState;
 
 
@@ -75,20 +75,20 @@ namespace App2
 		Microsoft::WRL::ComPtr<ID3D11InputLayout>	m_CloudInputLayout;
 		Microsoft::WRL::ComPtr<ID3D11PixelShader>	m_BillboardPixelShader;
 		Microsoft::WRL::ComPtr<ID3D11VertexShader>	m_BillboardVertexShader;
-		Microsoft::WRL::ComPtr<ID3D11GeometryShader> m_BillboardGeometryShader;
-		Microsoft::WRL::ComPtr<ID3D11Buffer> m_CloudVertexBuffer;
-		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_CloudShaderResourceView;
+		Microsoft::WRL::ComPtr<ID3D11GeometryShader>m_BillboardGeometryShader;
+		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_CloudVertexBuffer;
+Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>	m_CloudShaderResourceView;
 		Microsoft::WRL::ComPtr<ID3D11SamplerState>	m_CloudSamplerState;
 		static const unsigned int m_CloudCount = 1;
 		PositionScalerUV m_CloudPoints;
 
 		//Resources for tessellated terrain
-		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_TerrainShaderResourceView;
-		Microsoft::WRL::ComPtr<ID3D11HullShader> m_TerrianHullShader;
-		Microsoft::WRL::ComPtr<ID3D11DomainShader> m_TerrianDomainShader;
+Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>	m_TerrainShaderResourceView;
+		Microsoft::WRL::ComPtr<ID3D11HullShader>	m_TerrianHullShader;
+		Microsoft::WRL::ComPtr<ID3D11DomainShader>	m_TerrianDomainShader;
 		unsigned int LevelOfDetail = 1;
-		Microsoft::WRL::ComPtr<ID3D11Buffer> m_TerrainHullShaderConstantBuffer;
-		Microsoft::WRL::ComPtr<ID3D11Buffer> m_TerrainDomainShaderConstantBuffer;
+		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_TerrainHullShaderConstantBuffer;
+		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_TerrainDomainShaderConstantBuffer;
 		HullShaderData m_TerrainConstantBufferData;
 		DomainShaderData m_TerrainDomainShaderConstantBufferData;
 

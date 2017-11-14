@@ -1,6 +1,6 @@
 // Per-pixel color data passed through the pixel shader.
 
-texture2D baseTexture : register(t0);
+Texture2D baseTexture : register(t0);
 SamplerState filter : register(s0);
 struct PixelShaderInput
 {
@@ -17,6 +17,9 @@ float4 main(PixelShaderInput input) : SV_TARGET
 {
 
     float4 baseColor = float4(baseTexture.Sample(filter, input.texcoord));
+    if(baseColor.w < 0.75f)
+        discard;
+    
 
 
     return float4(baseColor);

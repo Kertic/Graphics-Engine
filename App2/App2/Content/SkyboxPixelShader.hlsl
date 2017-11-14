@@ -31,6 +31,7 @@ float4 main(PixelShaderInput input) : SV_TARGET
 
     float3 baseColor = baseTexture.Sample(filter, input.worldPos);
     input.color = baseColor;
+  
 
 
     return float4(input.color, 1.0f);

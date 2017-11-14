@@ -92,7 +92,7 @@ Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>	m_TerrianTexture;
 		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_TerrainDomainShaderConstantBuffer;
 		HullShaderData m_TerrainConstantBufferData;
 		DomainShaderData m_TerrainDomainShaderConstantBufferData;
-
+		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>	m_FACETEXTURE;
 
 		// System resources for cube geometry.
 		ModelViewProjectionConstantBuffer	m_PlaneConstantBufferData;

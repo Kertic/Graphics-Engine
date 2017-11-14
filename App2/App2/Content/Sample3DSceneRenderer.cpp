@@ -654,6 +654,7 @@ void Sample3DSceneRenderer::Render()
 	);
 	//Use the CustomMesh b/c this has no texture
 	context->PSSetShaderResources(0, 1, m_TerrianTexture.GetAddressOf());
+	context->PSSetShaderResources(1, 1, m_FACETEXTURE.GetAddressOf());
 	context->PSSetSamplers(0, 1, m_CustomMeshSamplerState.GetAddressOf());
 	context->HSSetShader(m_TerrianHullShader.Get(), nullptr, 0);
 
@@ -1025,6 +1026,7 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 
 		CreateDDSTextureFromFile(m_deviceResources->GetD3DDevice(), L"Assets/Cloud1.dds", nullptr, &m_CloudShaderResourceView);
 		CreateDDSTextureFromFile(m_deviceResources->GetD3DDevice(), L"Assets/Terrain map.dds", nullptr, &m_TerrainShaderResourceView);
+		CreateDDSTextureFromFile(m_deviceResources->GetD3DDevice(), L"Assets/FACE.dds", nullptr, &m_FACETEXTURE);
 		CreateDDSTextureFromFile(m_deviceResources->GetD3DDevice(), L"Assets/Terrain map.dds", nullptr, &m_TerrianTexture);
 		
 

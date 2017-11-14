@@ -105,6 +105,9 @@
     <Image Include="Assets\sunset_sky.dds">
       <Filter>Assets</Filter>
     </Image>
+    <Image Include="Assets\FACE.dds">
+      <Filter>Assets</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest" />

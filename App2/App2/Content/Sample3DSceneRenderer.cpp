@@ -82,6 +82,11 @@ void Sample3DSceneRenderer::CreateWindowSizeDependentResources()
 		&m_PlaneConstantBufferData.projection,
 		XMMatrixTranspose(perspectiveMatrix * orientationMatrix)
 	);
+	//Normal Plane
+	XMStoreFloat4x4(
+		&m_NormalPlaneConstantBufferData.projection,
+		XMMatrixTranspose(perspectiveMatrix * orientationMatrix)
+	);
 
 	//Pyramid
 
@@ -106,6 +111,7 @@ void Sample3DSceneRenderer::CreateWindowSizeDependentResources()
 
 	XMStoreFloat4x4(&camera, XMMatrixLookAtLH(eye, at, up));
 	XMStoreFloat4x4(&m_PlaneConstantBufferData.view, XMMatrixTranspose(XMMatrixInverse(0, XMMatrixLookAtLH(eye, at, up))));
+	XMStoreFloat4x4(&m_NormalPlaneConstantBufferData.view, XMMatrixTranspose(XMMatrixInverse(0, XMMatrixLookAtLH(eye, at, up))));
 	XMStoreFloat4x4(&m_CustomMeshConstantBufferData.view, XMMatrixTranspose(XMMatrixInverse(0, XMMatrixLookAtLH(eye, at, up))));
 	XMStoreFloat4x4(&m_PyramidconstantBufferData.view, XMMatrixTranspose(XMMatrixInverse(0, XMMatrixLookAtLH(eye, at, up))));
 	m_TerrainConstantBufferData.detailLevel = XMUINT2(1, 0);
@@ -117,6 +123,7 @@ void Sample3DSceneRenderer::CreateWindowSizeDependentResources()
 	XMVECTOR scale;
 	XMMatrixDecompose(&scale, &rot, &pos, newcamera);
 	XMStoreFloat4(&m_PlaneConstantBufferData.cameraPosition, pos);
+	XMStoreFloat4(&m_NormalPlaneConstantBufferData.cameraPosition, pos);
 	XMStoreFloat4(&m_PyramidconstantBufferData.cameraPosition, pos);
 	XMStoreFloat4(&m_CustomMeshConstantBufferData.cameraPosition, pos);
 
@@ -263,6 +270,7 @@ void Sample3DSceneRenderer::Update(DX::StepTimer const& timer)
 
 	/*Be sure to inverse the camera & Transpose because they don't use pragma pack row major in shaders*/
 	XMStoreFloat4x4(&m_PlaneConstantBufferData.view, XMMatrixTranspose(XMMatrixInverse(0, newcamera)));
+	XMStoreFloat4x4(&m_NormalPlaneConstantBufferData.view, XMMatrixTranspose(XMMatrixInverse(0, newcamera)));
 	XMStoreFloat4x4(&m_PyramidconstantBufferData.view, XMMatrixTranspose(XMMatrixInverse(0, newcamera)));
 	XMStoreFloat4x4(&m_CustomMeshConstantBufferData.view, XMMatrixTranspose(XMMatrixInverse(0, newcamera)));
 	m_TerrainDomainShaderConstantBufferData.model = m_PlaneConstantBufferData.model[0];
@@ -277,6 +285,7 @@ void Sample3DSceneRenderer::Update(DX::StepTimer const& timer)
 
 
 	XMStoreFloat4(&m_PlaneConstantBufferData.cameraPosition, pos);
+	XMStoreFloat4(&m_NormalPlaneConstantBufferData.cameraPosition, pos);
 	XMStoreFloat4(&m_PyramidconstantBufferData.cameraPosition, pos);
 	XMStoreFloat4(&m_CustomMeshConstantBufferData.cameraPosition, pos);
 
@@ -373,6 +382,7 @@ void Sample3DSceneRenderer::Rotate(float radians)
 
 	// Prepare to pass the updated model matrix to the shader
 	XMStoreFloat4x4(&m_PlaneConstantBufferData.model[0], XMMatrixTranspose(XMMatrixRotationY(0.0f)));
+	XMStoreFloat4x4(&m_NormalPlaneConstantBufferData.model[0], XMMatrixTranspose(XMMatrixRotationY(0.0f)));
 
 #pragma region Independant Pyramid Transformations
 	XMStoreFloat4x4(&m_PyramidconstantBufferData.model[0], XMMatrixTranspose(XMMatrixTranslation(m_PyramidconstantBufferData.cameraPosition.x, m_PyramidconstantBufferData.cameraPosition.y, m_PyramidconstantBufferData.cameraPosition.z)));
@@ -509,7 +519,73 @@ void Sample3DSceneRenderer::Render()
 
 
 #pragma endregion
+#pragma region NormalMapPlane
 
+
+
+	// Prepare the constant buffer to send it to the graphics device.
+	context->UpdateSubresource1(
+		m_NormalPlaneConstantBuffer.Get(),
+		0,
+		NULL,
+		&m_NormalPlaneConstantBufferData,
+		0,
+		0,
+		0
+	);
+
+	// Each vertex is one instance of the VertexPositionColorNormalUV struct.
+	stride = sizeof(VertexPositionColorNormalUV);
+	offset = 0;
+	context->IASetVertexBuffers(
+		0,
+		1,
+		m_NormalPlaneVertexBuffer.GetAddressOf(),
+		&stride,
+		&offset
+	);
+
+	context->IASetIndexBuffer(
+		m_NormalPlaneIndexBuffer.Get(),
+		DXGI_FORMAT_R16_UINT, // Each index is one 16-bit unsigned integer (short).
+		0
+	);
+
+	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	context->IASetInputLayout(m_CustomMeshInputLayout.Get());
+
+	// Attach our vertex shader.
+	context->VSSetShader(
+		m_CustomMeshVertexShader.Get(),
+		nullptr,
+		0
+	);
+
+	// Send the constant buffer to the graphics device.
+	context->VSSetConstantBuffers1(
+		0,
+		1,
+		m_NormalPlaneConstantBuffer.GetAddressOf(),
+		nullptr,
+		nullptr
+	);
+
+	// Attach our pixel shader.
+	context->PSSetShader(
+		m_NormalPlanePixelShader.Get(),
+		nullptr,
+		0
+	);
+	context->PSSetShaderResources(0, 1, m_CustomMeshShaderResourceView.GetAddressOf());
+	context->PSSetShaderResources(1, 1, m_NormalPlaneShaderResourceView.GetAddressOf());
+
+	context->PSSetSamplers(0, 1, m_CustomMeshSamplerState.GetAddressOf());
+
+	// Draw the objects.
+
+	context->DrawIndexed(m_NormalPlaneIndexCount, 0, 0);
+#pragma endregion
 #pragma region Draw Custom Mesh
 
 
@@ -794,6 +870,8 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 	auto loadHSTask = DX::ReadDataAsync(L"TerrainHullShader.cso");
 	auto loadDSTask = DX::ReadDataAsync(L"TerrainDomainShader.cso");
 
+	auto loadPSTask4 = DX::ReadDataAsync(L"NormalMappingPixelShader.cso");
+
 	// After the vertex shader file is loaded, create the shader and input layout.
 	auto createVSTask = loadVSTask.then([this](const std::vector<byte>& fileData) {
 
@@ -829,6 +907,9 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 			)
 		);
 #pragma endregion
+
+
+
 	});
 	auto createVSTask3 = loadVSTask3.then([this](const std::vector<byte>& fileData) {
 #pragma region Pyramid
@@ -1109,6 +1190,14 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 
 		CreateDDSTextureFromFile(m_deviceResources->GetD3DDevice(), L"Assets/rock.dds", nullptr, &m_CustomMeshShaderResourceView);
 #pragma endregion
+
+		DX::ThrowIfFailed(
+			m_deviceResources->GetD3DDevice()->CreateBuffer(
+				&constantBufferDesc,
+				nullptr,
+				&m_NormalPlaneConstantBuffer
+			)
+		);
 	});
 	auto createHSTask = loadHSTask.then([this](const std::vector<byte>& fileData) {
 		DX::ThrowIfFailed(
@@ -1147,7 +1236,19 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 			)
 		);
 	});
+	auto createPSTask4 = loadPSTask4.then([this](const std::vector<byte>& fileData) {
 
+		DX::ThrowIfFailed(
+			m_deviceResources->GetD3DDevice()->CreatePixelShader(
+				&fileData[0],
+				fileData.size(),
+				nullptr,
+				&m_NormalPlanePixelShader
+			)
+		);
+		CreateDDSTextureFromFile(m_deviceResources->GetD3DDevice(), L"Assets/NormalMap.dds", nullptr, &m_NormalPlaneShaderResourceView);
+		
+	});
 
 	// Once both shaders are loaded, create the mesh.
 	auto createCubeTask = (createPSTask && createVSTask && createGSTask && createPSTask2 && createVSTask2 && createHSTask && createDSTask && createPSTask3 && createVSTask3).then([this]() {
@@ -1210,7 +1311,64 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 			)
 		);
 #pragma endregion
+#pragma region Create Plane verts
 
+
+
+
+
+
+		static const VertexPositionColorNormalUV NormPlaneVerts[] =
+		{
+
+
+			{ XMFLOAT3(-2.0f, -3.0f, 2.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(0.0f, 1.0f) },//Front left
+			{ XMFLOAT3(-2.0f, -3.0f, -2.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(0.0f, 0.0f) },//Back left
+			{ XMFLOAT3(2.0f, -3.0f, -2.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(1.0f, 0.0f) },//BackRight
+			{ XMFLOAT3(2.0f, -3.0f, 2.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(1.0f, 1.0f) },//Front right
+
+
+
+		};
+
+		vertexBufferData = { 0 };
+		vertexBufferData.pSysMem = NormPlaneVerts;
+		vertexBufferData.SysMemPitch = 0;
+		vertexBufferData.SysMemSlicePitch = 0;
+		vertexBufferDesc = CD3D11_BUFFER_DESC(sizeof(NormPlaneVerts), D3D11_BIND_VERTEX_BUFFER);
+		DX::ThrowIfFailed(
+			m_deviceResources->GetD3DDevice()->CreateBuffer(
+				&vertexBufferDesc,
+				&vertexBufferData,
+				&m_NormalPlaneVertexBuffer
+			)
+		);
+
+		static const unsigned short NormPlaneIndicies[] =
+		{
+			0,1,2,
+			2,3,0
+
+		};
+
+
+
+
+		m_NormalPlaneIndexCount = ARRAYSIZE(NormPlaneIndicies);
+
+		indexBufferData = { 0 };
+		indexBufferData.pSysMem = NormPlaneIndicies;
+		indexBufferData.SysMemPitch = 0;
+		indexBufferData.SysMemSlicePitch = 0;
+		indexBufferDesc = CD3D11_BUFFER_DESC(sizeof(NormPlaneIndicies), D3D11_BIND_INDEX_BUFFER);
+		DX::ThrowIfFailed(
+			m_deviceResources->GetD3DDevice()->CreateBuffer(
+				&indexBufferDesc,
+				&indexBufferData,
+				&m_NormalPlaneIndexBuffer
+			)
+		);
+#pragma endregion
 #pragma region Create Pyramid Verts
 
 
@@ -1288,6 +1446,7 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources()
 			)
 		);
 #pragma endregion
+
 
 
 		CreateCustomMesh();

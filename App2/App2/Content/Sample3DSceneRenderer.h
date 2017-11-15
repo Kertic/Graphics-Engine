@@ -45,9 +45,11 @@ namespace App2
 		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_PlaneConstantBuffer;
 
 		// Direct3D resources for cube geometry.
-		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_CubeVertexBuffer;
-		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_CubeIndexBuffer;
-		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_CubeConstantBuffer;
+		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_NormalPlaneVertexBuffer;
+		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_NormalPlaneIndexBuffer;
+		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_NormalPlaneConstantBuffer;
+		Microsoft::WRL::ComPtr<ID3D11PixelShader>	m_NormalPlanePixelShader;
+Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>	m_NormalPlaneShaderResourceView;
 	
 
 
@@ -97,6 +99,9 @@ Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>	m_TerrianTexture;
 		// System resources for cube geometry.
 		ModelViewProjectionConstantBuffer	m_PlaneConstantBufferData;
 		uint32	m_PlaneIndexCount;
+
+		ModelViewProjectionConstantBuffer	m_NormalPlaneConstantBufferData;
+		uint32	m_NormalPlaneIndexCount;
 
 		ModelViewProjectionConstantBuffer	m_PyramidconstantBufferData;
 		uint32	m_PyramidindexCount;

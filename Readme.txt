@@ -22,3 +22,7 @@ Press K to change the floor texture to a rocky texture
 
 
 Check the BillboardPixelShader for proof of multi-texturing, it has the face be textured over the original texture
+
+
+To see the normal map, there is a  small plane beneath the floating rocks. Mess with the lights(set it to point or spotlight for best effects) 
+to see the normal map, and you'll see it aligns with the NormalMap.dds

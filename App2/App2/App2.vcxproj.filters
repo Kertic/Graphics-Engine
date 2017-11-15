@@ -108,6 +108,9 @@
     <Image Include="Assets\FACE.dds">
       <Filter>Assets</Filter>
     </Image>
+    <Image Include="Assets\NormalMap.dds">
+      <Filter>Assets</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest" />
@@ -140,6 +143,9 @@
       <Filter>Content</Filter>
     </FxCompile>
     <FxCompile Include="Content\SkyboxVertexShader.hlsl">
+      <Filter>Content</Filter>
+    </FxCompile>
+    <FxCompile Include="Content\NormalMappingPixelShader.hlsl">
       <Filter>Content</Filter>
     </FxCompile>
   </ItemGroup>

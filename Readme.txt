@@ -1,4 +1,5 @@
-
+WASD for moving the camera
+LMB for looking with the camera
 
 
 Press 1 to activate Directional light
